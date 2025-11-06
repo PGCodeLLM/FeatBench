@@ -1,27 +1,14 @@
 import json
 import time
-import toml
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
 import openai
-from pathlib import Path
+import json_repair
 from tqdm import tqdm
-
-# --- Configuration Loading ---
-def load_config():
-    """Load configuration file"""
-    config_file = Path(__file__).parent / "config.toml"
-    with open(config_file, 'r', encoding='utf-8') as f:
-        return toml.load(f)
-
-CONFIG = load_config()
-
-# --- Configuration Area ---
-OPENAI_API_KEY = CONFIG['common']['openai_api_key']
-OPENAI_MODEL = CONFIG['common']['openai_model']
-
-# Cache file
-ANALYSIS_CACHE_FILE = Path(__file__).parent / CONFIG['common']['output_dir'] / CONFIG['release_analyzer']['analysis_cache_file']
+from config import (
+    OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL, ANALYSIS_CACHE_FILE,
+    MAX_README_LENGTH, README_TRUNCATION_SUFFIX, PROMPTS
+)
 
 # --- Data Class Definitions ---
 
@@ -119,78 +106,37 @@ def save_analysis_to_cache(analysis: ReleaseAnalysis):
 def analyze_release_with_llm(release_body: str, tag_name: str, repo_readme: str = "") -> Dict[str, List[Dict]]:
     """Use LLM to analyze feature changes and PR links in release body"""
     
-    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url="")
+    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
     
     # Build prompt with README context
     readme_context = ""
     if repo_readme.strip():
-        # Read parameters from config
-        max_readme_length = CONFIG['release_analyzer']['max_readme_length']
-        truncation_suffix = CONFIG['release_analyzer']['readme_truncation_suffix']
-        
         # Truncate README to avoid overly long prompt
-        readme_excerpt = repo_readme[:max_readme_length]
-        if len(repo_readme) > max_readme_length:
-            readme_excerpt += truncation_suffix
-        readme_context = f"""
-Repository Context (README):
+        readme_excerpt = repo_readme[:MAX_README_LENGTH]
+        if len(repo_readme) > MAX_README_LENGTH:
+            readme_excerpt += README_TRUNCATION_SUFFIX
+        readme_context = f"""Repository Context (README):
 {readme_excerpt}
 
 ---
 """
-    
-    prompt = f"""
-{readme_context}Analyze the following software release notes and categorize the changes into: new_features, improvements, bug_fixes, and other_changes.
-For each change, extract any PR references (like #123, PR456, pull #789, etc.) mentioned in the text.
 
-Release version: {tag_name}
-Release notes:
-{release_body}
+    # Get prompts from config
+    release_analysis_system_prompt = PROMPTS.release_analysis_system
+    release_analysis_user_prompt_template = PROMPTS.release_analysis_user
 
-Guidelines:
-1. new_features: Brand new functionality, commands, rules, or capabilities
-2. improvements: Enhancements to existing features, optimizations, performance improvements
-3. bug_fixes: Bug fixes, error handling, crash fixes
-4. other_changes: Documentation updates, dependency updates, refactoring (only if significant)
-5. Extract PR numbers from various formats: #123, PR #456, pull 789, (#101), etc.
-6. Only include PR numbers that are explicitly mentioned with the change
-7. Ignore trivial changes like version bumps unless they're part of larger features
-8. Use the repository context to better understand the project's domain and categorize changes more accurately
-
-Return the result in JSON format:
-{
-    "new_features": [
-        {
-            "description": "Brief description of the new feature",
-            "pr_ids": ["123", "456"]
-        }
-    ],
-    "improvements": [
-        {
-            "description": "Brief description of the improvement", 
-            "pr_ids": ["789"]
-        }
-    ],
-    "bug_fixes": [
-        {
-            "description": "Brief description of the bug fix",
-            "pr_ids": ["101"]
-        }
-    ],
-    "other_changes": [
-        {
-            "description": "Brief description of other changes",
-            "pr_ids": []
-        }
-    ]
-}
-"""
+    # Format the user prompt with variables
+    prompt = release_analysis_user_prompt_template.format(
+        readme_context=readme_context,
+        tag_name=tag_name,
+        release_body=release_body
+    )
 
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "You are a software development expert who specializes in analyzing release notes and categorizing software changes."},
+                {"role": "system", "content": release_analysis_system_prompt},
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"},
@@ -201,7 +147,7 @@ Return the result in JSON format:
         if content is None:
             print("⚠️ LLM returned empty content")
             return {"new_features": [], "improvements": [], "bug_fixes": [], "other_changes": []}
-        result = json.loads(content)
+        result = json_repair.loads(content)
         return result
             
     except Exception as e:

@@ -1,10 +1,8 @@
 import argparse
 import json
 import time
-from pathlib import Path
 from typing import List, Dict
 import sys
-import toml
 from tqdm import tqdm
 
 from release_collector import (
@@ -15,34 +13,19 @@ from release_collector import (
 )
 from release_analyzer import analyze_repository_releases, ReleaseAnalysis, load_analysis_cache
 from pr_analyzer import enhance_release_analysis_with_pr_details, load_pr_analysis_cache
-
-# --- Configuration Loading ---
-def load_config():
-    """Load configuration file"""
-    config_file = Path(__file__).parent / "config.toml"
-    try:
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config = toml.load(f)
-        return config
-    except Exception as e:
-        print(f"❌ Failed to load configuration file: {e}")
-        sys.exit(1)
-
-CONFIG = load_config()
-OUTPUT_DIR = Path(__file__).parent / CONFIG['common']['output_dir']
-FINAL_RESULTS_FILE = OUTPUT_DIR / CONFIG['main']['final_results_file']
+from config import OUTPUT_DIR, FINAL_RESULTS_FILE, SAMPLE_RESULTS_LIMIT
 
 def setup_output_directory():
     """Create output directory"""
     OUTPUT_DIR.mkdir(exist_ok=True)
     print(f"✅ Output directory ready: {OUTPUT_DIR}")
 
-def collect_repositories(use_cache: bool = True, crawl_mode: str = None) -> List[Repository]:
+def collect_repositories(use_cache: bool = True) -> List[Repository]:
     """Collect and process repositories"""
     print("\n🔍 === Step 1: Collect Repository Information ===")
     
     # Get list of repositories to process and processed repositories
-    pre_filtered_repos, processed_repos = get_repositories_to_process(use_cache, crawl_mode)
+    pre_filtered_repos, processed_repos = get_repositories_to_process(use_cache)
     
     if not pre_filtered_repos:
         print("❌ No repositories passed initial filtering")
@@ -62,7 +45,6 @@ def collect_repositories(use_cache: bool = True, crawl_mode: str = None) -> List
         final_repositories.extend(processed_repos.values())
         print(f"📂 Loaded {len(processed_repos)} processed repositories")
     
-    # Use tqdm to show processing progress
     with tqdm(pre_filtered_repos, desc="Processing repositories", unit="repo") as pbar:
         for repo in pbar:
             repo_name = repo['full_name']
@@ -170,17 +152,13 @@ def save_final_results(enhanced_results: List[Dict]):
     except Exception as e:
         print(f"❌ Failed to save results: {e}")
 
-def print_sample_results(enhanced_results: List[Dict], limit: int = 5):
+def print_sample_results(enhanced_results: List[Dict]):
     """Print sample results"""
-    # If no limit specified, use default from config
-    if limit is None:
-        limit = CONFIG['main']['sample_results_limit']
-        
-    print(f"\n🎯 === Sample Results Preview (First {limit}) ===")
-    
-    for i, result in enumerate(enhanced_results[:limit]):
+    print(f"\n🎯 === Sample Results Preview (First {SAMPLE_RESULTS_LIMIT}) ===")
+
+    for i, result in enumerate(enhanced_results[:SAMPLE_RESULTS_LIMIT]):
         print(f"\n--- Sample {i+1}: {result['repository']} - {result['release']} ---")
-        
+
         enhanced_features = result['enhanced_new_features']
         for j, feature in enumerate(enhanced_features[:2]):  # Show only first 2 features per release
             print(f"  Feature {j+1}: {feature['description'][:100]}...")
@@ -200,8 +178,6 @@ def main():
                        help='Only perform release analysis, skip repository collection')
     parser.add_argument('--enhance-only', action='store_true',
                        help='Only perform PR enhancement analysis, skip previous steps')
-    parser.add_argument('--crawl-mode', choices=['stars', 'specified'], default='specified',
-                       help='Choose crawl mode: stars (filter by star count) or specified (use specified repository list)')
     
     args = parser.parse_args()
     
@@ -217,7 +193,7 @@ def main():
     try:
         if not args.analyze_only and not args.enhance_only:
             # Step 1: Collect repositories
-            repositories = collect_repositories(use_cache=use_cache, crawl_mode=args.crawl_mode)
+            repositories = collect_repositories(use_cache=use_cache)
             
             if not repositories:
                 print("❌ No valid repositories collected, program ends")

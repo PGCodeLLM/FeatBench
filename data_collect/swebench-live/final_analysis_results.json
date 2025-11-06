@@ -1,0 +1,797 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-06 01:10:48",
+    "total_repositories": 1,
+    "total_releases": 2,
+    "total_enhanced_features": 3
+  },
+  "results": [
+    {
+      "repository": "home-assistant/core",
+      "release": "2025.10.2",
+      "analyzed_at": "2025-11-06 00:35:25",
+      "enhanced_new_features": [
+        {
+          "feature_type": "new_feature",
+          "description": "Add motion presets to SmartThings AC",
+          "pr_analyses": [
+            {
+              "pr_number": "153830",
+              "repo_name": "home-assistant/core",
+              "title": "Add motion presets to SmartThings AC",
+              "description": "<!--\r\n  You are amazing! Thanks for contributing to our project!\r\n  Please, DO NOT DELETE ANY TEXT from this template! (unless instructed).\r\n-->\r\n## Proposed change\r\n<!--\r\n  Describe the big picture of your changes here to communicate to the\r\n  maintainers why we should accept this pull request. If it fixes a bug\r\n  or resolves a feature request, be sure to link to that issue in the\r\n  additional information section.\r\n-->\r\nAdd motion presets to SmartThings AC\r\n\r\n## Type of change\r\n<!--\r\n  What type of change does your PR introduce to Home Assistant?\r\n  NOTE: Please, check only 1! box!\r\n  If your PR requires multiple boxes to be checked, you'll most likely need to\r\n  split it into multiple PRs. This makes things easier and faster to code review.\r\n-->\r\n\r\n- [ ] Dependency upgrade\r\n- [x] Bugfix (non-breaking change which fixes an issue)\r\n- [ ] New integration (thank you!)\r\n- [ ] New feature (which adds functionality to an existing integration)\r\n- [ ] Deprecation (breaking change to happen in the future)\r\n- [ ] Breaking change (fix/feature causing existing functionality to break)\r\n- [ ] Code quality improvements to existing code or addition of tests\r\n\r\n## Additional information\r\n<!--\r\n  Details are important, and help maintainers processing your PR.\r\n  Please be sure to fill out additional details, if applicable.\r\n-->\r\n\r\n- This PR fixes or closes issue: fixes #153659\r\n- This PR is related to issue: \r\n- Link to documentation pull request: \r\n- Link to developer documentation pull request: \r\n- Link to frontend pull request: \r\n\r\n## Checklist\r\n<!--\r\n  Put an `x` in the boxes that apply. You can also fill these out after\r\n  creating the PR. If you're unsure about any of them, don't hesitate to ask.\r\n  We're here to help! This is simply a reminder of what we are going to look\r\n  for before merging your code.\r\n\r\n  AI tools are welcome, but contributors are responsible for *fully*\r\n  understanding the code before submitting a PR.\r\n-->\r\n\r\n- [ ] I understand the code I am submitting and can explain how it works.\r\n- [ ] The code change is tested and works locally.\r\n- [ ] Local tests pass. **Your PR cannot be merged unless tests pass**\r\n- [ ] There is no commented out code in this PR.\r\n- [ ] I have followed the [development checklist][dev-checklist]\r\n- [ ] I have followed the [perfect PR recommendations][perfect-pr]\r\n- [ ] The code has been formatted using Ruff (`ruff format homeassistant tests`)\r\n- [ ] Tests have been added to verify that the new code works.\r\n- [ ] Any generated code has been carefully reviewed for correctness and compliance with project standards.\r\n\r\nIf user exposed functionality or configuration variables are added/changed:\r\n\r\n- [ ] Documentation added/updated for [www.home-assistant.io][docs-repository]\r\n\r\nIf the code communicates with devices, web services, or third-party tools:\r\n\r\n- [ ] The [manifest file][manifest-docs] has all fields filled out correctly.  \r\n      Updated and included derived files by running: `python3 -m script.hassfest`.\r\n- [ ] New or updated dependencies have been added to `requirements_all.txt`.  \r\n      Updated by running `python3 -m script.gen_requirements_all`.\r\n- [ ] For the updated dependencies - a link to the changelog, or at minimum a diff between library versions is added to the PR description.\r\n\r\n<!--\r\n  This project is very active and we have a high turnover of pull requests.\r\n\r\n  Unfortunately, the number of incoming pull requests is higher than what our\r\n  reviewers can review and merge so there is a long backlog of pull requests\r\n  waiting for review. You can help here!\r\n  \r\n  By reviewing another pull request, you will help raise the code quality of\r\n  that pull request and the final review will be faster. This way the general\r\n  pace of pull request reviews will go up and your wait time will go down.\r\n  \r\n  When picking a pull request to review, try to choose one that hasn't yet\r\n  been reviewed.\r\n\r\n  Thanks for helping out!\r\n-->\r\n\r\nTo help with the load of incoming pull requests:\r\n\r\n- [ ] I have reviewed two other [open pull requests][prs] in this repository.\r\n\r\n[prs]: https://github.com/home-assistant/core/pulls?q=is%3Aopen+is%3Apr+-author%3A%40me+-draft%3Atrue+-label%3Awaiting-for-upstream+sort%3Acreated-desc+review%3Anone+-status%3Afailure\r\n\r\n<!--\r\n  Thank you for contributing <3\r\n\r\n  Below, some useful links you could explore:\r\n-->\r\n[dev-checklist]: https://developers.home-assistant.io/docs/development_checklist/\r\n[manifest-docs]: https://developers.home-assistant.io/docs/creating_integration_manifest/\r\n[quality-scale]: https://developers.home-assistant.io/docs/integration_quality_scale_index/\r\n[docs-repository]: https://github.com/home-assistant/home-assistant.io\r\n[perfect-pr]: https://developers.home-assistant.io/docs/review-process/#creating-the-perfect-pr\r\n",
+              "state": "closed",
+              "merged": true,
+              "base_commit": {
+                "sha": "c0aa9bfd4bc784979757b581b99ef4b0f8b82472",
+                "message": "Update Mealie quality scale to platinum (#153810)",
+                "date": "2025-10-06T10:14:05Z",
+                "author": "Andrew Jackson"
+              },
+              "head_commit": {
+                "sha": "e666b29032faafcf23f7a4111f2f1508ccd0d25d",
+                "message": "Add motion presets to SmartThings AC",
+                "date": "2025-10-06T11:19:34Z",
+                "author": "Joostlek"
+              },
+              "file_changes": [
+                {
+                  "filename": "homeassistant/components/smartthings/climate.py",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 0,
+                  "changes": 2,
+                  "patch": "@@ -109,6 +109,8 @@\n     \"quiet\": \"quiet\",\n     \"longWind\": \"long_wind\",\n     \"smart\": \"smart\",\n+    \"motionIndirect\": \"motion_indirect\",\n+    \"motionDirect\": \"motion_direct\",\n }\n \n HA_MODE_TO_PRESET_MODE = {v: k for k, v in PRESET_MODE_TO_HA.items()}"
+                },
+                {
+                  "filename": "homeassistant/components/smartthings/strings.json",
+                  "status": "modified",
+                  "additions": 3,
+                  "deletions": 1,
+                  "changes": 4,
+                  "patch": "@@ -87,7 +87,9 @@\n               \"wind_free_sleep\": \"WindFree sleep\",\n               \"quiet\": \"Quiet\",\n               \"long_wind\": \"Long wind\",\n-              \"smart\": \"Smart\"\n+              \"smart\": \"Smart\",\n+              \"motion_direct\": \"Motion direct\",\n+              \"motion_indirect\": \"Motion indirect\"\n             }\n           },\n           \"fan_mode\": {"
+                },
+                {
+                  "filename": "tests/components/smartthings/fixtures/device_status/da_ac_rac_000003.json",
+                  "status": "modified",
+                  "additions": 158,
+                  "deletions": 100,
+                  "changes": 258,
+                  "patch": "@@ -3,9 +3,9 @@\n     \"main\": {\n       \"relativeHumidityMeasurement\": {\n         \"humidity\": {\n-          \"value\": 48,\n+          \"value\": 59,\n           \"unit\": \"%\",\n-          \"timestamp\": \"2025-03-27T05:12:16.158Z\"\n+          \"timestamp\": \"2025-10-04T13:03:19.251Z\"\n         }\n       },\n       \"custom.airConditionerOdorController\": {\n@@ -20,36 +20,37 @@\n         \"minimumSetpoint\": {\n           \"value\": 16,\n           \"unit\": \"C\",\n-          \"timestamp\": \"2025-03-13T09:29:37.008Z\"\n+          \"timestamp\": \"2025-08-20T15:31:02.655Z\"\n         },\n         \"maximumSetpoint\": {\n           \"value\": 30,\n           \"unit\": \"C\",\n-          \"timestamp\": \"2024-06-21T13:45:16.785Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         }\n       },\n       \"airConditionerMode\": {\n         \"availableAcModes\": {\n           \"value\": null\n         },\n         \"supportedAcModes\": {\n-          \"value\": [\"cool\", \"dry\", \"wind\", \"auto\"],\n-          \"timestamp\": \"2024-06-21T13:45:16.785Z\"\n+          \"value\": [\"cool\", \"dry\", \"wind\", \"auto\", \"heat\"],\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"airConditionerMode\": {\n-          \"value\": \"cool\",\n-          \"timestamp\": \"2025-03-13T09:29:36.789Z\"\n+          \"value\": \"heat\",\n+          \"timestamp\": \"2025-10-04T12:59:27.205Z\"\n         }\n       },\n       \"custom.spiMode\": {\n         \"spiMode\": {\n           \"value\": \"off\",\n-          \"timestamp\": \"2025-02-08T08:54:15.661Z\"\n+          \"timestamp\": \"2025-10-03T18:10:05.905Z\"\n         }\n       },\n       \"samsungce.deviceIdentification\": {\n         \"micomAssayCode\": {\n-          \"value\": null\n+          \"value\": \"10217841\",\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"modelName\": {\n           \"value\": null\n@@ -61,17 +62,20 @@\n           \"value\": null\n         },\n         \"modelClassificationCode\": {\n-          \"value\": null\n+          \"value\": \"60010523001411010200001000000000\",\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"description\": {\n-          \"value\": null\n+          \"value\": \"ARTIK051_PRAC_20K\",\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"releaseYear\": {\n-          \"value\": null\n+          \"value\": 20,\n+          \"timestamp\": \"2025-06-12T09:25:21.264Z\"\n         },\n         \"binaryId\": {\n           \"value\": \"ARTIK051_PRAC_20K\",\n-          \"timestamp\": \"2025-03-27T05:12:15.284Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.732Z\"\n         }\n       },\n       \"airQualitySensor\": {\n@@ -87,26 +91,28 @@\n             \"quiet\",\n             \"smart\",\n             \"speed\",\n+            \"motionIndirect\",\n+            \"motionDirect\",\n             \"windFree\",\n             \"windFreeSleep\"\n           ],\n-          \"timestamp\": \"2024-06-21T13:45:16.785Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"acOptionalMode\": {\n           \"value\": \"off\",\n-          \"timestamp\": \"2025-03-26T12:20:41.095Z\"\n+          \"timestamp\": \"2025-09-28T10:20:26.885Z\"\n         }\n       },\n       \"switch\": {\n         \"switch\": {\n           \"value\": \"on\",\n-          \"timestamp\": \"2025-03-27T05:41:42.291Z\"\n+          \"timestamp\": \"2025-10-04T12:59:27.185Z\"\n         }\n       },\n       \"custom.airConditionerTropicalNightMode\": {\n         \"acTropicalNightModeLevel\": {\n           \"value\": 0,\n-          \"timestamp\": \"2025-02-08T08:54:15.789Z\"\n+          \"timestamp\": \"2025-06-17T10:45:00.985Z\"\n         }\n       },\n       \"ocf\": {\n@@ -118,65 +124,65 @@\n         },\n         \"mnfv\": {\n           \"value\": \"ARTIK051_PRAC_20K_11230313\",\n-          \"timestamp\": \"2024-06-21T13:58:04.085Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"mnhw\": {\n           \"value\": \"ARTIK051\",\n-          \"timestamp\": \"2024-06-21T13:51:35.294Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"di\": {\n-          \"value\": \"c76d6f38-1b7f-13dd-37b5-db18d5272783\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"value\": \"1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977\",\n+          \"timestamp\": \"2025-10-04T03:34:13.486Z\"\n         },\n         \"mnsl\": {\n           \"value\": \"http://www.samsung.com\",\n-          \"timestamp\": \"2024-06-21T13:51:35.980Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"dmv\": {\n           \"value\": \"res.1.1.0,sh.1.1.0\",\n-          \"timestamp\": \"2024-06-21T13:58:04.698Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.486Z\"\n         },\n         \"n\": {\n           \"value\": \"Samsung Room A/C\",\n-          \"timestamp\": \"2024-06-21T13:58:04.085Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.486Z\"\n         },\n         \"mnmo\": {\n-          \"value\": \"ARTIK051_PRAC_20K|10256941|60010534001411014600003200800000\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"value\": \"ARTIK051_PRAC_20K|10217841|60010523001411010200001000000000\",\n+          \"timestamp\": \"2025-10-04T03:34:13.732Z\"\n         },\n         \"vid\": {\n           \"value\": \"DA-AC-RAC-000003\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"mnmn\": {\n           \"value\": \"Samsung Electronics\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"mnml\": {\n           \"value\": \"http://www.samsung.com\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"mnpv\": {\n           \"value\": \"DAWIT 2.0\",\n-          \"timestamp\": \"2024-06-21T13:51:35.294Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"mnos\": {\n           \"value\": \"TizenRT 1.0 + IPv6\",\n-          \"timestamp\": \"2024-06-21T13:51:35.294Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"pi\": {\n-          \"value\": \"c76d6f38-1b7f-13dd-37b5-db18d5272783\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"value\": \"1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977\",\n+          \"timestamp\": \"2025-10-04T03:34:13.484Z\"\n         },\n         \"icv\": {\n           \"value\": \"core.1.1.0\",\n-          \"timestamp\": \"2024-06-21T13:45:16.329Z\"\n+          \"timestamp\": \"2025-10-04T03:34:13.486Z\"\n         }\n       },\n       \"airConditionerFanMode\": {\n         \"fanMode\": {\n-          \"value\": \"low\",\n-          \"timestamp\": \"2025-03-26T12:20:41.393Z\"\n+          \"value\": \"auto\",\n+          \"timestamp\": \"2025-10-04T12:59:27.323Z\"\n         },\n         \"supportedAcFanModes\": {\n           \"value\": [\"auto\", \"low\", \"medium\", \"high\", \"turbo\"],\n@@ -190,12 +196,12 @@\n         \"alarmThreshold\": {\n           \"value\": 500,\n           \"unit\": \"Hour\",\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-17T12:15:04.968Z\"\n         },\n         \"supportedAlarmThresholds\": {\n           \"value\": [180, 300, 500, 700],\n           \"unit\": \"Hour\",\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         }\n       },\n       \"custom.electricHepaFilter\": {\n@@ -231,10 +237,12 @@\n             \"custom.electricHepaFilter\",\n             \"custom.periodicSensing\",\n             \"custom.doNotDisturbMode\",\n+            \"demandResponseLoadControl\",\n             \"custom.airConditionerOdorController\",\n-            \"samsungce.individualControlLock\"\n+            \"samsungce.individualControlLock\",\n+            \"samsungce.alwaysOnSensing\"\n           ],\n-          \"timestamp\": \"2025-02-08T08:54:15.355Z\"\n+          \"timestamp\": \"2025-10-04T12:59:27.205Z\"\n         }\n       },\n       \"custom.ocfResourceVersion\": {\n@@ -247,8 +255,8 @@\n       },\n       \"samsungce.driverVersion\": {\n         \"versionNumber\": {\n-          \"value\": 24040101,\n-          \"timestamp\": \"2024-06-21T13:45:16.348Z\"\n+          \"value\": 25040101,\n+          \"timestamp\": \"2025-06-12T10:13:31.862Z\"\n         }\n       },\n       \"fanOscillationMode\": {\n@@ -261,17 +269,17 @@\n         },\n         \"fanOscillationMode\": {\n           \"value\": \"fixed\",\n-          \"timestamp\": \"2025-02-25T15:40:11.773Z\"\n+          \"timestamp\": \"2025-10-04T15:53:27.427Z\"\n         }\n       },\n       \"temperatureMeasurement\": {\n         \"temperatureRange\": {\n           \"value\": null\n         },\n         \"temperature\": {\n-          \"value\": 26,\n+          \"value\": 20,\n           \"unit\": \"C\",\n-          \"timestamp\": \"2025-03-26T14:19:08.047Z\"\n+          \"timestamp\": \"2025-10-04T13:07:50.163Z\"\n         }\n       },\n       \"dustSensor\": {\n@@ -285,128 +293,175 @@\n       \"custom.deviceReportStateConfiguration\": {\n         \"reportStateRealtimePeriod\": {\n           \"value\": \"disabled\",\n-          \"timestamp\": \"2025-02-08T08:54:15.726Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"reportStateRealtime\": {\n           \"value\": {\n             \"state\": \"enabled\",\n             \"duration\": 10,\n             \"unit\": \"minute\"\n           },\n-          \"timestamp\": \"2025-03-24T08:28:07.030Z\"\n+          \"timestamp\": \"2025-10-04T15:53:14.562Z\"\n         },\n         \"reportStatePeriod\": {\n           \"value\": \"enabled\",\n-          \"timestamp\": \"2025-02-08T08:54:15.726Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         }\n       },\n       \"custom.periodicSensing\": {\n         \"automaticExecutionSetting\": {\n-          \"value\": null\n+          \"value\": \"NotSupported\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"automaticExecutionMode\": {\n-          \"value\": null\n+          \"value\": \"NotSupported\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"supportedAutomaticExecutionSetting\": {\n-          \"value\": null\n+          \"value\": [\"NotSupported\"],\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"supportedAutomaticExecutionMode\": {\n-          \"value\": null\n+          \"value\": [\"NotSupported\"],\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"periodicSensing\": {\n-          \"value\": null\n+          \"value\": \"off\",\n+          \"timestamp\": \"2021-12-22T07:01:09.979Z\"\n         },\n         \"periodicSensingInterval\": {\n-          \"value\": null\n+          \"value\": 600,\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"lastSensingTime\": {\n           \"value\": null\n         },\n         \"lastSensingLevel\": {\n-          \"value\": null\n+          \"value\": \"\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"periodicSensingStatus\": {\n-          \"value\": null\n+          \"value\": \"nonprocessing\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         }\n       },\n       \"thermostatCoolingSetpoint\": {\n         \"coolingSetpointRange\": {\n           \"value\": null\n         },\n         \"coolingSetpoint\": {\n-          \"value\": 24,\n+          \"value\": 19,\n           \"unit\": \"C\",\n-          \"timestamp\": \"2025-03-26T12:20:41.346Z\"\n+          \"timestamp\": \"2025-10-04T12:59:27.582Z\"\n         }\n       },\n       \"demandResponseLoadControl\": {\n         \"drlcStatus\": {\n           \"value\": {\n             \"drlcType\": 1,\n+            \"drlcLevel\": -1,\n+            \"start\": \"1970-01-01T00:00:00Z\",\n             \"duration\": 0,\n             \"override\": false\n           },\n-          \"timestamp\": \"2025-03-24T04:56:36.855Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         }\n       },\n       \"audioVolume\": {\n         \"volume\": {\n           \"value\": 100,\n           \"unit\": \"%\",\n-          \"timestamp\": \"2025-02-08T08:54:15.789Z\"\n+          \"timestamp\": \"2025-06-17T10:45:00.985Z\"\n         }\n       },\n       \"powerConsumptionReport\": {\n         \"powerConsumption\": {\n           \"value\": {\n-            \"energy\": 602171,\n-            \"deltaEnergy\": 0,\n-            \"power\": 0,\n-            \"powerEnergy\": 0.0,\n-            \"persistedEnergy\": 602171,\n+            \"energy\": 6652713,\n+            \"deltaEnergy\": 2,\n+            \"power\": 143,\n+            \"powerEnergy\": 1.747048611111111,\n+            \"persistedEnergy\": 6652713,\n             \"energySaved\": 0,\n-            \"persistedSavedEnergy\": 0,\n-            \"start\": \"2025-03-27T05:29:22Z\",\n-            \"end\": \"2025-03-27T05:40:02Z\"\n+            \"start\": \"2025-10-04T15:54:24Z\",\n+            \"end\": \"2025-10-04T15:55:07Z\"\n           },\n-          \"timestamp\": \"2025-03-27T05:40:02.686Z\"\n+          \"timestamp\": \"2025-10-04T15:55:07.378Z\"\n         }\n       },\n       \"custom.autoCleaningMode\": {\n         \"supportedAutoCleaningModes\": {\n-          \"value\": null\n+          \"value\": [\"on\", \"off\"],\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"timedCleanDuration\": {\n           \"value\": null\n         },\n         \"operatingState\": {\n-          \"value\": null\n+          \"value\": \"ready\",\n+          \"timestamp\": \"2025-08-20T17:44:52.796Z\"\n         },\n         \"timedCleanDurationRange\": {\n           \"value\": null\n         },\n         \"supportedOperatingStates\": {\n-          \"value\": null\n+          \"value\": [\"autoClean\", \"ready\"],\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"progress\": {\n-          \"value\": null\n+          \"value\": 0,\n+          \"unit\": \"%\",\n+          \"timestamp\": \"2025-08-20T17:44:52.796Z\"\n         },\n         \"autoCleaningMode\": {\n-          \"value\": \"off\",\n-          \"timestamp\": \"2025-03-15T05:30:11.075Z\"\n+          \"value\": \"on\",\n+          \"timestamp\": \"2025-08-18T18:16:46.505Z\"\n         }\n       },\n       \"samsungce.individualControlLock\": {\n         \"lockState\": {\n           \"value\": null\n         }\n       },\n+      \"samsungce.alwaysOnSensing\": {\n+        \"origins\": {\n+          \"value\": null\n+        },\n+        \"alwaysOn\": {\n+          \"value\": null\n+        }\n+      },\n       \"refresh\": {},\n       \"execute\": {\n         \"data\": {\n           \"value\": null\n         }\n       },\n+      \"samsungce.softwareVersion\": {\n+        \"versions\": {\n+          \"value\": [\n+            {\n+              \"id\": \"0\",\n+              \"swType\": \"Software\",\n+              \"versionNumber\": \"02181A230313\",\n+              \"description\": \"Version\"\n+            },\n+            {\n+              \"id\": \"1\",\n+              \"swType\": \"Firmware\",\n+              \"versionNumber\": \"20082000,FFFFFFFF\",\n+              \"description\": \"Version\"\n+            },\n+            {\n+              \"id\": \"2\",\n+              \"swType\": \"Outdoor\",\n+              \"versionNumber\": \"19112900,10000400\",\n+              \"description\": \"Version\"\n+            }\n+          ],\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n+        }\n+      },\n       \"samsungce.selfCheck\": {\n         \"result\": {\n           \"value\": null\n@@ -420,36 +475,37 @@\n         },\n         \"errors\": {\n           \"value\": [],\n-          \"timestamp\": \"2025-02-08T08:54:15.048Z\"\n+          \"timestamp\": \"2025-10-03T16:56:38.154Z\"\n         },\n         \"status\": {\n-          \"value\": null\n+          \"value\": \"ready\",\n+          \"timestamp\": \"2025-10-03T18:10:05.915Z\"\n         }\n       },\n       \"custom.dustFilter\": {\n         \"dustFilterUsageStep\": {\n           \"value\": 1,\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-17T12:15:04.968Z\"\n         },\n         \"dustFilterUsage\": {\n-          \"value\": 69,\n-          \"timestamp\": \"2025-03-26T10:57:41.097Z\"\n+          \"value\": 22,\n+          \"timestamp\": \"2025-10-03T15:20:27.649Z\"\n         },\n         \"dustFilterLastResetDate\": {\n           \"value\": null\n         },\n         \"dustFilterStatus\": {\n           \"value\": \"normal\",\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-17T12:15:04.968Z\"\n         },\n         \"dustFilterCapacity\": {\n           \"value\": 500,\n           \"unit\": \"Hour\",\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-17T12:15:04.968Z\"\n         },\n         \"dustFilterResetType\": {\n           \"value\": [\"replaceable\", \"washable\"],\n-          \"timestamp\": \"2025-02-08T08:54:15.473Z\"\n+          \"timestamp\": \"2025-06-17T12:15:04.968Z\"\n         }\n       },\n       \"odorSensor\": {\n@@ -485,16 +541,16 @@\n       \"custom.energyType\": {\n         \"energyType\": {\n           \"value\": \"1.0\",\n-          \"timestamp\": \"2024-06-21T13:45:16.785Z\"\n+          \"timestamp\": \"2024-12-14T03:34:07.681Z\"\n         },\n         \"energySavingSupport\": {\n-          \"value\": true,\n-          \"timestamp\": \"2024-06-21T13:58:08.419Z\"\n+          \"value\": false,\n+          \"timestamp\": \"2021-12-29T01:15:12.093Z\"\n         },\n         \"drMaxDuration\": {\n-          \"value\": 99999999,\n+          \"value\": 1440,\n           \"unit\": \"min\",\n-          \"timestamp\": \"2024-06-21T13:51:39.304Z\"\n+          \"timestamp\": \"2022-01-01T12:19:18.649Z\"\n         },\n         \"energySavingLevel\": {\n           \"value\": null\n@@ -506,36 +562,35 @@\n           \"value\": null\n         },\n         \"energySavingOperation\": {\n-          \"value\": false,\n-          \"timestamp\": \"2025-02-08T08:54:16.767Z\"\n+          \"value\": null\n         },\n         \"notificationTemplateID\": {\n           \"value\": null\n         },\n         \"energySavingOperationSupport\": {\n           \"value\": false,\n-          \"timestamp\": \"2025-03-24T04:56:36.855Z\"\n+          \"timestamp\": \"2022-01-01T12:19:18.649Z\"\n         }\n       },\n       \"samsungce.softwareUpdate\": {\n         \"targetModule\": {\n           \"value\": {},\n-          \"timestamp\": \"2025-02-08T08:54:16.685Z\"\n+          \"timestamp\": \"2025-06-19T07:55:10.859Z\"\n         },\n         \"otnDUID\": {\n-          \"value\": \"MTCPH4AI4MTYO\",\n-          \"timestamp\": \"2025-02-08T08:54:15.626Z\"\n+          \"value\": \"ZPCNQWBWA22VW\",\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"lastUpdatedDate\": {\n           \"value\": null\n         },\n         \"availableModules\": {\n           \"value\": [],\n-          \"timestamp\": \"2025-02-08T08:54:15.626Z\"\n+          \"timestamp\": \"2024-12-13T22:55:32.254Z\"\n         },\n         \"newVersionAvailable\": {\n           \"value\": false,\n-          \"timestamp\": \"2025-02-08T08:54:15.626Z\"\n+          \"timestamp\": \"2025-06-18T03:34:18.116Z\"\n         },\n         \"operatingState\": {\n           \"value\": null\n@@ -571,13 +626,16 @@\n       },\n       \"custom.doNotDisturbMode\": {\n         \"doNotDisturb\": {\n-          \"value\": null\n+          \"value\": \"off\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"startTime\": {\n-          \"value\": null\n+          \"value\": \"0000\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         },\n         \"endTime\": {\n-          \"value\": null\n+          \"value\": \"0000\",\n+          \"timestamp\": \"2021-05-28T08:57:59.311Z\"\n         }\n       }\n     }"
+                },
+                {
+                  "filename": "tests/components/smartthings/fixtures/devices/da_ac_rac_000003.json",
+                  "status": "modified",
+                  "additions": 20,
+                  "deletions": 11,
+                  "changes": 31,
+                  "patch": "@@ -1,15 +1,15 @@\n {\n   \"items\": [\n     {\n-      \"deviceId\": \"c76d6f38-1b7f-13dd-37b5-db18d5272783\",\n+      \"deviceId\": \"1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977\",\n       \"name\": \"Samsung Room A/C\",\n-      \"label\": \"Office AirFree\",\n+      \"label\": \"Clim Salon\",\n       \"manufacturerName\": \"Samsung Electronics\",\n       \"presentationId\": \"DA-AC-RAC-000003\",\n       \"deviceManufacturerCode\": \"Samsung Electronics\",\n-      \"locationId\": \"403cd42e-f692-416c-91fd-1883c00e3262\",\n-      \"ownerId\": \"dd474e5c-59c0-4bea-a319-ff5287fd3373\",\n-      \"roomId\": \"dffe353e-b3c5-4a97-8a8a-797ccc649fab\",\n+      \"locationId\": \"460f8f20-0428-491d-8ead-8d901cc9f7eb\",\n+      \"ownerId\": \"88597a89-5117-0b3c-264f-396fbc9072a4\",\n+      \"roomId\": \"e7a14810-8688-4d37-bf02-72a2c673c0d7\",\n       \"deviceTypeName\": \"Samsung OCF Air Conditioner\",\n       \"components\": [\n         {\n@@ -152,6 +152,10 @@\n               \"id\": \"custom.disabledCapabilities\",\n               \"version\": 1\n             },\n+            {\n+              \"id\": \"samsungce.alwaysOnSensing\",\n+              \"version\": 1\n+            },\n             {\n               \"id\": \"samsungce.deviceIdentification\",\n               \"version\": 1\n@@ -168,6 +172,10 @@\n               \"id\": \"samsungce.softwareUpdate\",\n               \"version\": 1\n             },\n+            {\n+              \"id\": \"samsungce.softwareVersion\",\n+              \"version\": 1\n+            },\n             {\n               \"id\": \"samsungce.selfCheck\",\n               \"version\": 1\n@@ -182,27 +190,28 @@\n               \"name\": \"AirConditioner\",\n               \"categoryType\": \"manufacturer\"\n             }\n-          ]\n+          ],\n+          \"optional\": false\n         }\n       ],\n-      \"createTime\": \"2024-06-21T13:45:16.238Z\",\n+      \"createTime\": \"2021-05-28T08:51:37.616Z\",\n       \"profile\": {\n-        \"id\": \"cedae6e3-1ec9-37e3-9aba-f717518156b8\"\n+        \"id\": \"bb4a6df4-6e0f-303a-ac35-445ea78a41fe\"\n       },\n       \"ocf\": {\n         \"ocfDeviceType\": \"oic.d.airconditioner\",\n         \"name\": \"Samsung Room A/C\",\n         \"specVersion\": \"core.1.1.0\",\n-        \"verticalDomainSpecVersion\": \"1.2.1\",\n+        \"verticalDomainSpecVersion\": \"res.1.1.0,sh.1.1.0\",\n         \"manufacturerName\": \"Samsung Electronics\",\n-        \"modelNumber\": \"ARTIK051_PRAC_20K|10256941|60010534001411014600003200800000\",\n+        \"modelNumber\": \"ARTIK051_PRAC_20K|10217841|60010523001411010200001000000000\",\n         \"platformVersion\": \"DAWIT 2.0\",\n         \"platformOS\": \"TizenRT 1.0 + IPv6\",\n         \"hwVersion\": \"ARTIK051\",\n         \"firmwareVersion\": \"ARTIK051_PRAC_20K_11230313\",\n         \"vendorId\": \"DA-AC-RAC-000003\",\n         \"vendorResourceClientServerVersion\": \"ARTIK051 Release 2.211222.1\",\n-        \"lastSignupTime\": \"2024-06-21T13:45:08.592221Z\",\n+        \"lastSignupTime\": \"2021-05-28T08:51:30.356392Z\",\n         \"transferCandidate\": false,\n         \"additionalAuthCodeRequired\": false\n       },"
+                },
+                {
+                  "filename": "tests/components/smartthings/snapshots/test_climate.ambr",
+                  "status": "modified",
+                  "additions": 18,
+                  "deletions": 10,
+                  "changes": 28,
+                  "patch": "@@ -420,7 +420,7 @@\n     'state': 'off',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][climate.office_airfree-entry]\n+# name: test_all_entities[da_ac_rac_000003][climate.clim_salon-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -439,6 +439,7 @@\n         <HVACMode.DRY: 'dry'>,\n         <HVACMode.FAN_ONLY: 'fan_only'>,\n         <HVACMode.AUTO: 'auto'>,\n+        <HVACMode.HEAT: 'heat'>,\n       ]),\n       'max_temp': 35,\n       'min_temp': 7,\n@@ -448,6 +449,8 @@\n         'quiet',\n         'smart',\n         'boost',\n+        'motion_indirect',\n+        'motion_direct',\n         'wind_free',\n         'wind_free_sleep',\n       ]),\n@@ -465,7 +468,7 @@\n     'disabled_by': None,\n     'domain': 'climate',\n     'entity_category': None,\n-    'entity_id': 'climate.office_airfree',\n+    'entity_id': 'climate.clim_salon',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -483,31 +486,34 @@\n     'suggested_object_id': None,\n     'supported_features': <ClimateEntityFeature: 441>,\n     'translation_key': 'air_conditioner',\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main',\n     'unit_of_measurement': None,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][climate.office_airfree-state]\n+# name: test_all_entities[da_ac_rac_000003][climate.clim_salon-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n-      'current_temperature': 26,\n+      'current_temperature': 20,\n       'drlc_status_duration': 0,\n+      'drlc_status_level': -1,\n       'drlc_status_override': False,\n-      'fan_mode': 'low',\n+      'drlc_status_start': '1970-01-01T00:00:00Z',\n+      'fan_mode': 'auto',\n       'fan_modes': list([\n         'auto',\n         'low',\n         'medium',\n         'high',\n         'turbo',\n       ]),\n-      'friendly_name': 'Office AirFree',\n+      'friendly_name': 'Clim Salon',\n       'hvac_modes': list([\n         <HVACMode.OFF: 'off'>,\n         <HVACMode.COOL: 'cool'>,\n         <HVACMode.DRY: 'dry'>,\n         <HVACMode.FAN_ONLY: 'fan_only'>,\n         <HVACMode.AUTO: 'auto'>,\n+        <HVACMode.HEAT: 'heat'>,\n       ]),\n       'max_temp': 35,\n       'min_temp': 7,\n@@ -518,6 +524,8 @@\n         'quiet',\n         'smart',\n         'boost',\n+        'motion_indirect',\n+        'motion_direct',\n         'wind_free',\n         'wind_free_sleep',\n       ]),\n@@ -529,14 +537,14 @@\n         'vertical',\n         'horizontal',\n       ]),\n-      'temperature': 24,\n+      'temperature': 19,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'climate.office_airfree',\n+    'entity_id': 'climate.clim_salon',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': 'cool',\n+    'state': 'heat',\n   })\n # ---\n # name: test_all_entities[da_ac_rac_01001][climate.aire_dormitorio_principal-entry]"
+                },
+                {
+                  "filename": "tests/components/smartthings/snapshots/test_init.ambr",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 2,
+                  "changes": 4,
+                  "patch": "@@ -451,15 +451,15 @@\n     'identifiers': set({\n       tuple(\n         'smartthings',\n-        'c76d6f38-1b7f-13dd-37b5-db18d5272783',\n+        '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977',\n       ),\n     }),\n     'labels': set({\n     }),\n     'manufacturer': 'Samsung Electronics',\n     'model': 'ARTIK051_PRAC_20K',\n     'model_id': None,\n-    'name': 'Office AirFree',\n+    'name': 'Clim Salon',\n     'name_by_user': None,\n     'primary_config_entry': <ANY>,\n     'serial_number': None,"
+                },
+                {
+                  "filename": "tests/components/smartthings/snapshots/test_sensor.ambr",
+                  "status": "modified",
+                  "additions": 56,
+                  "deletions": 56,
+                  "changes": 112,
+                  "patch": "@@ -2509,7 +2509,7 @@\n     'state': '100',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2524,7 +2524,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_energy',\n+    'entity_id': 'sensor.clim_salon_energy',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2545,27 +2545,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': None,\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_powerConsumptionReport_powerConsumption_energy_meter',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_powerConsumptionReport_powerConsumption_energy_meter',\n     'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'energy',\n-      'friendly_name': 'Office AirFree Energy',\n+      'friendly_name': 'Clim Salon Energy',\n       'state_class': <SensorStateClass.TOTAL_INCREASING: 'total_increasing'>,\n       'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_energy',\n+    'entity_id': 'sensor.clim_salon_energy',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '602.171',\n+    'state': '6652.713',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy_difference-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy_difference-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2580,7 +2580,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_energy_difference',\n+    'entity_id': 'sensor.clim_salon_energy_difference',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2601,27 +2601,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': 'energy_difference',\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_powerConsumptionReport_powerConsumption_deltaEnergy_meter',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_powerConsumptionReport_powerConsumption_deltaEnergy_meter',\n     'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy_difference-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy_difference-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'energy',\n-      'friendly_name': 'Office AirFree Energy difference',\n+      'friendly_name': 'Clim Salon Energy difference',\n       'state_class': <SensorStateClass.TOTAL: 'total'>,\n       'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_energy_difference',\n+    'entity_id': 'sensor.clim_salon_energy_difference',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '0.0',\n+    'state': '0.002',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy_saved-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy_saved-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2636,7 +2636,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_energy_saved',\n+    'entity_id': 'sensor.clim_salon_energy_saved',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2657,27 +2657,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': 'energy_saved',\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_powerConsumptionReport_powerConsumption_energySaved_meter',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_powerConsumptionReport_powerConsumption_energySaved_meter',\n     'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_energy_saved-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_energy_saved-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'energy',\n-      'friendly_name': 'Office AirFree Energy saved',\n+      'friendly_name': 'Clim Salon Energy saved',\n       'state_class': <SensorStateClass.TOTAL_INCREASING: 'total_increasing'>,\n       'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_energy_saved',\n+    'entity_id': 'sensor.clim_salon_energy_saved',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n     'state': '0.0',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_humidity-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_humidity-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2692,7 +2692,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_humidity',\n+    'entity_id': 'sensor.clim_salon_humidity',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2710,27 +2710,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': None,\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_relativeHumidityMeasurement_humidity_humidity',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_relativeHumidityMeasurement_humidity_humidity',\n     'unit_of_measurement': '%',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_humidity-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_humidity-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'humidity',\n-      'friendly_name': 'Office AirFree Humidity',\n+      'friendly_name': 'Clim Salon Humidity',\n       'state_class': <SensorStateClass.MEASUREMENT: 'measurement'>,\n       'unit_of_measurement': '%',\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_humidity',\n+    'entity_id': 'sensor.clim_salon_humidity',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '48',\n+    'state': '59',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_power-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_power-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2745,7 +2745,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_power',\n+    'entity_id': 'sensor.clim_salon_power',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2766,29 +2766,29 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': None,\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_powerConsumptionReport_powerConsumption_power_meter',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_powerConsumptionReport_powerConsumption_power_meter',\n     'unit_of_measurement': <UnitOfPower.WATT: 'W'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_power-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_power-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'power',\n-      'friendly_name': 'Office AirFree Power',\n-      'power_consumption_end': '2025-03-27T05:40:02Z',\n-      'power_consumption_start': '2025-03-27T05:29:22Z',\n+      'friendly_name': 'Clim Salon Power',\n+      'power_consumption_end': '2025-10-04T15:55:07Z',\n+      'power_consumption_start': '2025-10-04T15:54:24Z',\n       'state_class': <SensorStateClass.MEASUREMENT: 'measurement'>,\n       'unit_of_measurement': <UnitOfPower.WATT: 'W'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_power',\n+    'entity_id': 'sensor.clim_salon_power',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '0',\n+    'state': '143',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_power_energy-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_power_energy-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2803,7 +2803,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_power_energy',\n+    'entity_id': 'sensor.clim_salon_power_energy',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2824,27 +2824,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': 'power_energy',\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_powerConsumptionReport_powerConsumption_powerEnergy_meter',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_powerConsumptionReport_powerConsumption_powerEnergy_meter',\n     'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_power_energy-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_power_energy-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'energy',\n-      'friendly_name': 'Office AirFree Power energy',\n+      'friendly_name': 'Clim Salon Power energy',\n       'state_class': <SensorStateClass.TOTAL: 'total'>,\n       'unit_of_measurement': <UnitOfEnergy.KILO_WATT_HOUR: 'kWh'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_power_energy',\n+    'entity_id': 'sensor.clim_salon_power_energy',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '0.0',\n+    'state': '0.00174704861111111',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_temperature-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_temperature-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2859,7 +2859,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_temperature',\n+    'entity_id': 'sensor.clim_salon_temperature',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2880,27 +2880,27 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': None,\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_temperatureMeasurement_temperature_temperature',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_temperatureMeasurement_temperature_temperature',\n     'unit_of_measurement': <UnitOfTemperature.CELSIUS: '°C'>,\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_temperature-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_temperature-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n       'device_class': 'temperature',\n-      'friendly_name': 'Office AirFree Temperature',\n+      'friendly_name': 'Clim Salon Temperature',\n       'state_class': <SensorStateClass.MEASUREMENT: 'measurement'>,\n       'unit_of_measurement': <UnitOfTemperature.CELSIUS: '°C'>,\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_temperature',\n+    'entity_id': 'sensor.clim_salon_temperature',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,\n-    'state': '26',\n+    'state': '20',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_volume-entry]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_volume-entry]\n   EntityRegistryEntrySnapshot({\n     'aliases': set({\n     }),\n@@ -2913,7 +2913,7 @@\n     'disabled_by': None,\n     'domain': 'sensor',\n     'entity_category': None,\n-    'entity_id': 'sensor.office_airfree_volume',\n+    'entity_id': 'sensor.clim_salon_volume',\n     'has_entity_name': True,\n     'hidden_by': None,\n     'icon': None,\n@@ -2931,18 +2931,18 @@\n     'suggested_object_id': None,\n     'supported_features': 0,\n     'translation_key': 'audio_volume',\n-    'unique_id': 'c76d6f38-1b7f-13dd-37b5-db18d5272783_main_audioVolume_volume_volume',\n+    'unique_id': '1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977_main_audioVolume_volume_volume',\n     'unit_of_measurement': '%',\n   })\n # ---\n-# name: test_all_entities[da_ac_rac_000003][sensor.office_airfree_volume-state]\n+# name: test_all_entities[da_ac_rac_000003][sensor.clim_salon_volume-state]\n   StateSnapshot({\n     'attributes': ReadOnlyDict({\n-      'friendly_name': 'Office AirFree Volume',\n+      'friendly_name': 'Clim Salon Volume',\n       'unit_of_measurement': '%',\n     }),\n     'context': <ANY>,\n-    'entity_id': 'sensor.office_airfree_volume',\n+    'entity_id': 'sensor.clim_salon_volume',\n     'last_changed': <ANY>,\n     'last_reported': <ANY>,\n     'last_updated': <ANY>,"
+                },
+                {
+                  "filename": "tests/components/smartthings/test_climate.py",
+                  "status": "modified",
+                  "additions": 2,
+                  "deletions": 2,
+                  "changes": 4,
+                  "patch": "@@ -469,11 +469,11 @@ async def test_ac_set_preset_mode(\n     await hass.services.async_call(\n         CLIMATE_DOMAIN,\n         SERVICE_SET_PRESET_MODE,\n-        {ATTR_ENTITY_ID: \"climate.office_airfree\", ATTR_PRESET_MODE: mode},\n+        {ATTR_ENTITY_ID: \"climate.clim_salon\", ATTR_PRESET_MODE: mode},\n         blocking=True,\n     )\n     devices.execute_device_command.assert_called_with(\n-        \"c76d6f38-1b7f-13dd-37b5-db18d5272783\",\n+        \"1e3f7ca2-e005-e1a4-f6d7-bc231e3f7977\",\n         Capability.CUSTOM_AIR_CONDITIONER_OPTIONAL_MODE,\n         Command.SET_AC_OPTIONAL_MODE,\n         MAIN,"
+                }
+              ],
+              "detailed_description": "I want to add motion presets to my SmartThings air conditioner integration so I can use motion-based cooling modes that my AC unit supports. My AC has two specific motion preset modes called \"motionIndirect\" and \"motionDirect\" that I need to be able to select and control through Home Assistant.\n\nI need the integration to recognize and support these two new motion preset modes alongside the existing presets. When I look at my AC's available preset options in Home Assistant, I want to see \"Motion direct\" and \"Motion indirect\" as selectable options that I can choose to activate these special motion-based cooling features.\n\nFor the user interface, I need these new motion presets to be properly labeled and displayed in the climate control panel. The preset names should appear as \"Motion direct\" and \"Motion indirect\" so they're clear and understandable when I'm selecting different operating modes for my air conditioner.\n\nI also need the integration to properly handle the communication with my SmartThings AC device when I select these motion presets. When I choose \"Motion direct\" from the preset options, it should send the correct command to set my AC to motion direct mode, and similarly for \"Motion indirect\" mode.\n\nThe system should maintain all the existing functionality while adding these new motion preset options. All the current preset modes like quiet, smart, wind free, and others should continue to work exactly as before, with the motion presets simply being additional options available in the preset selection.\n\nAdditionally, I need the testing and verification system to be updated to include these new motion presets. The test data should reflect that my AC device now supports these motion preset modes, and all automated tests should verify that the motion presets are properly recognized, displayed, and functional within the integration.\n\nWhen the integration checks what preset modes my AC supports, it should detect that motionIndirect and motionDirect are available options and make them accessible to me through the Home Assistant interface. The mapping between the device's internal mode names and the user-friendly display names should be consistent and accurate for these new motion presets.",
+              "has_tests": true,
+              "test_files": [
+                "tests/components/smartthings/test_climate.py"
+              ],
+              "only_modified_existing_functions": true,
+              "non_test_files": [
+                "homeassistant/components/smartthings/climate.py"
+              ],
+              "analyzed_at": "2025-11-06 01:04:58"
+            }
+          ],
+          "feature_detailed_description": "I want to add motion presets to my SmartThings air conditioner integration so I can use motion-based cooling modes that my AC unit supports. My AC has two specific motion preset modes called \"motionIndirect\" and \"motionDirect\" that I need to be able to select and control through Home Assistant.\n\nI need the integration to recognize and support these two new motion preset modes alongside the existing presets. When I look at my AC's available preset options in Home Assistant, I want to see \"Motion direct\" and \"Motion indirect\" as selectable options that I can choose to activate these special motion-based cooling features.\n\nFor the user interface, I need these new motion presets to be properly labeled and displayed in the climate control panel. The preset names should appear as \"Motion direct\" and \"Motion indirect\" so they're clear and understandable when I'm selecting different operating modes for my air conditioner.\n\nI also need the integration to properly handle the communication with my SmartThings AC device when I select these motion presets. When I choose \"Motion direct\" from the preset options, it should send the correct command to set my AC to motion direct mode, and similarly for \"Motion indirect\" mode.\n\nThe system should maintain all the existing functionality while adding these new motion preset options. All the current preset modes like quiet, smart, wind free, and others should continue to work exactly as before, with the motion presets simply being additional options available in the preset selection.\n\nAdditionally, I need the testing and verification system to be updated to include these new motion presets. The test data should reflect that my AC device now supports these motion preset modes, and all automated tests should verify that the motion presets are properly recognized, displayed, and functional within the integration.\n\nWhen the integration checks what preset modes my AC supports, it should detect that motionIndirect and motionDirect are available options and make them accessible to me through the Home Assistant interface. The mapping between the device's internal mode names and the user-friendly display names should be consistent and accurate for these new motion presets."
+        }
+      ],
+      "original_analysis": {
+        "tag_name": "2025.10.2",
+        "repo_name": "home-assistant/core",
+        "new_features": [
+          {
+            "feature_type": "new_feature",
+            "description": "Add motion presets to SmartThings AC",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153830"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "Add plate_count for Miele KM7575",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153868"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "Add missing entity category and icons for smlight integration",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154131"
+            ]
+          }
+        ],
+        "improvements": [
+          {
+            "feature_type": "improvement",
+            "description": "Switch Roborock to v4 of the code login api",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153593"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Gemini: Use default model instead of recommended where applicable",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153676"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Align Shelly `presencezone` entity to the new API/firmware",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153737"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Synology DSM: Don't reinitialize API during configuration",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153739"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Remove stale entities from Alexa Devices",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153759"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "vesync correct fan set modes",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153761"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Handle ESPHome discoveries with uninitialized Z-Wave antennas",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153790"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Catch update exception in AirGradient",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153828"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Limit SimpliSafe websocket connection attempts during startup",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153853"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Handle timeout errors gracefully in Nord Pool services",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153856"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Add missing translation string for Satel Integra subentry type",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153905"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Do not auto-set up ZHA zeroconf discoveries during onboarding",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153914"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Adjust OTBR config entry name for ZBT-2",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153940"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Don't mark ZHA coordinator as via_device with itself",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154004"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Filter out invalid Renault vehicles",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154070"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Z-Wave: ESPHome discovery to update all options",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154113"
+            ]
+          }
+        ],
+        "bug_fixes": [
+          {
+            "feature_type": "bug_fix",
+            "description": "Prevent reloading the ZHA integration while adapter firmware is being updated",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/152626"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Wallbox fix Rate Limit issue for multiple chargers",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153074"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix power device classes for system bridge",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153201"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix MQTT Lock state reset to unknown when a reset payload is received",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153647"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix ViCare pressure sensors missing unit of measurement",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153691"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Modbus Fix message_wait_milliseconds is no longer applied",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153709"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix missing google_assistant_sdk.send_text_command",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153735"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix sensors availability check for Alexa Devices",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153743"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix Tuya cover position when only control is available",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153803"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix delay_on and auto_off with multiple triggers",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153839"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix PIN validation for Comelit SimpleHome",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153840"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix restore cover state for Comelit SimpleHome",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153887"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "fix typo in icon assignment of AccuWeather integration",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153890"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix HA hardware configuration message for Thread without HAOS",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153933"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix update interval for AccuWeather hourly forecast",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153957"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix empty llm api list in chat log",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153996"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix for multiple Lyrion Music Server on a single Home Assistant server for Squeezebox",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154081"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix Shelly RPC cover update when the device is not initialized",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154159"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix shelly remove orphaned entities",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154182"
+            ]
+          }
+        ],
+        "other_changes": [
+          {
+            "feature_type": "other",
+            "description": "Updated VRM client and accounted for missing forecasts",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153464"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Update frontend to 20251001.2",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/154143"
+            ]
+          }
+        ],
+        "processed_body": "- Prevent reloading the ZHA integration while adapter firmware is being updated ([@puddly] - [#152626]) ([zha docs]) ([homeassistant_hardware docs])\r\n- Wallbox fix Rate Limit issue for multiple chargers ([@hesselonline] - [#153074]) ([wallbox docs])\r\n- Fix power device classes for system bridge ([@timmo001] - [#153201]) ([system_bridge docs])\r\n- Bump PyCync to 0.4.1 ([@Kinachi249] - [#153401]) ([cync docs]) (dependency)\r\n- Updated VRM client and accounted for missing forecasts ([@AndyTempel] - [#153464]) ([victron_remote_monitoring docs]) (dependency)\r\n- Bump python-roborock to 2.50.2 ([@Lash-L] - [#153561]) ([roborock docs]) (dependency)\r\n- Bump aioamazondevices to 6.2.8 ([@chemelli74] - [#153592]) ([alexa_devices docs]) (dependency)\r\n- Switch Roborock to v4 of the code login api ([@Lash-L] - [#153593]) ([roborock docs])\r\n- Fix MQTT Lock state reset to unknown when a reset payload is received ([@jbouwh] - [#153647]) ([mqtt docs])\r\n- Gemini: Use default model instead of recommended where applicable ([@Shulyaka] - [#153676]) ([google_generative_ai_conversation docs])\r\n- Fix ViCare pressure sensors missing unit of measurement ([@CFenner] - [#153691]) ([vicare docs])\r\n- Bump pyvesync to 3.1.0 ([@cdnninja] - [#153693]) ([vesync docs]) (dependency)\r\n- Modbus Fix message_wait_milliseconds is no longer applied ([@peetersch] - [#153709]) ([modbus docs])\r\n- Bump opower to 0.15.6 ([@tronikos] - [#153714]) ([opower docs]) (dependency)\r\n- Version bump pydaikin to 2.17.0 ([@fredrike] - [#153718]) ([daikin docs]) (dependency)\r\n- Version bump pydaikin to 2.17.1 ([@fredrike] - [#153726]) ([daikin docs]) (dependency)\r\n- Fix missing google_assistant_sdk.send_text_command ([@tronikos] - [#153735]) ([google_assistant_sdk docs])\r\n- Bump airOS to 0.5.5 using formdata for v6 firmware ([@CoMPaTech] - [#153736]) ([airos docs]) (dependency)\r\n- Align Shelly `presencezone` entity to the new API/firmware ([@bieniu] - [#153737]) ([shelly docs])\r\n- Synology DSM: Don't reinitialize API during configuration ([@oyvindwe] - [#153739]) ([synology_dsm docs])\r\n- Upgrade python-melcloud to 0.1.2 ([@Sander0542] - [#153742]) ([melcloud docs]) (dependency)\r\n- Fix sensors availability check for Alexa Devices ([@chemelli74] - [#153743]) ([alexa_devices docs])\r\n- Bump aioamazondevices to 6.2.9 ([@chemelli74] - [#153756]) ([alexa_devices docs])\r\n- Remove stale entities from Alexa Devices ([@chemelli74] - [#153759]) ([alexa_devices docs])\r\n- vesync correct fan set modes ([@cdnninja] - [#153761]) ([vesync docs])\r\n- Handle ESPHome discoveries with uninitialized Z-Wave antennas ([@balloob] - [#153790]) ([zwave_js docs])\r\n- Fix Tuya cover position when only control is available ([@epenet] - [#153803]) ([tuya docs])\r\n- Bump pySmartThings to 3.3.1 ([@joostlek] - [#153826]) ([smartthings docs]) (dependency)\r\n- Catch update exception in AirGradient ([@joostlek] - [#153828]) ([airgradient docs])\r\n- Add motion presets to SmartThings AC ([@joostlek] - [#153830]) ([smartthings docs])\r\n- Fix delay_on and auto_off with multiple triggers ([@Petro31] - [#153839]) ([template docs])\r\n- Fix PIN validation for Comelit SimpleHome ([@chemelli74] - [#153840]) ([comelit docs])\r\n- Bump aiocomelit to 1.1.1 ([@chemelli74] - [#153843]) ([comelit docs]) (dependency)\r\n- Limit SimpliSafe websocket connection attempts during startup ([@bachya] - [#153853]) ([simplisafe docs])\r\n- Handle timeout errors gracefully in Nord Pool services ([@gjohansson-ST] - [#153856]) ([nordpool docs])\r\n- Add plate_count for Miele KM7575 ([@derytive] - [#153868]) ([miele docs])\r\n- Fix restore cover state for Comelit SimpleHome ([@chemelli74] - [#153887]) ([comelit docs])\r\n- fix typo in icon assignment of AccuWeather integration ([@CFenner] - [#153890]) ([accuweather docs])\r\n- Add missing translation string for Satel Integra subentry type ([@Tommatheussen] - [#153905]) ([satel_integra docs])\r\n- Do not auto-set up ZHA zeroconf discoveries during onboarding ([@TheJulianJES] - [#153914]) ([zha docs])\r\n- `sharkiq` dependency bump to 1.4.2 ([@Freebien] - [#153931]) ([sharkiq docs]) (dependency)\r\n- Fix HA hardware configuration message for Thread without HAOS ([@TheJulianJES] - [#153933]) ([homeassistant_hardware docs])\r\n- Adjust OTBR config entry name for ZBT-2 ([@TheJulianJES] - [#153940]) ([otbr docs])\r\n- Bump pylamarzocco to 2.1.2 ([@zweckj] - [#153950]) ([lamarzocco docs]) (dependency)\r\n- Bump holidays to 0.82 ([@gjohansson-ST] - [#153952]) ([workday docs]) ([holiday docs]) (dependency)\r\n- Fix update interval for AccuWeather hourly forecast ([@bieniu] - [#153957]) ([accuweather docs])\r\n- Bump env-canada to 0.11.3 ([@michaeldavie] - [#153967]) ([environment_canada docs])\r\n- Fix empty llm api list in chat log ([@arturpragacz] - [#153996]) ([conversation docs])\r\n- Don't mark ZHA coordinator as via_device with itself ([@joostlek] - [#154004]) ([zha docs])\r\n- Filter out invalid Renault vehicles ([@epenet] - [#154070]) ([renault docs])\r\n- Bump aioamazondevices to 6.4.0 ([@chemelli74] - [#154071]) ([alexa_devices docs]) (dependency)\r\n- Bump brother to version 5.1.1 ([@bieniu] - [#154080]) ([brother docs]) (dependency)\r\n- Fix for multiple Lyrion Music Server on a single Home Assistant server for Squeezebox ([@peteS-UK] - [#154081]) ([squeezebox docs])\r\n- Z-Wave: ESPHome discovery to update all options ([@balloob] - [#154113]) ([zwave_js docs])\r\n- Add missing entity category and icons for smlight integration ([@piitaya] - [#154131]) ([smlight docs])\r\n- Update frontend to 20251001.2 ([@bramkragten] - [#154143]) ([frontend docs]) (dependency)\r\n- IOmeter bump version v0.2.0 ([@jukrebs] - [#154150]) ([iometer docs]) (dependency)\r\n- Bump deebot-client to 15.1.0 ([@edenhaus] - [#154154]) ([ecovacs docs]) (dependency)\r\n- Fix Shelly RPC cover update when the device is not initialized ([@thecode] - [#154159]) ([shelly docs])\r\n- Fix shelly remove orphaned entities ([@thecode] - [#154182]) ([shelly docs])\r\n\r\n[#152626]: https://github.com/home-assistant/core/pull/152626\r\n[#152881]: https://github.com/home-assistant/core/pull/152881\r\n[#153074]: https://github.com/home-assistant/core/pull/153074\r\n[#153201]: https://github.com/home-assistant/core/pull/153201\r\n[#153401]: https://github.com/home-assistant/core/pull/153401\r\n[#153464]: https://github.com/home-assistant/core/pull/153464\r\n[#153561]: https://github.com/home-assistant/core/pull/153561\r\n[#153582]: https://github.com/home-assistant/core/pull/153582\r\n[#153592]: https://github.com/home-assistant/core/pull/153592\r\n[#153593]: https://github.com/home-assistant/core/pull/153593\r\n[#153647]: https://github.com/home-assistant/core/pull/153647\r\n[#153676]: https://github.com/home-assistant/core/pull/153676\r\n[#153691]: https://github.com/home-assistant/core/pull/153691\r\n[#153693]: https://github.com/home-assistant/core/pull/153693\r\n[#153709]: https://github.com/home-assistant/core/pull/153709\r\n[#153714]: https://github.com/home-assistant/core/pull/153714\r\n[#153718]: https://github.com/home-assistant/core/pull/153718\r\n[#153726]: https://github.com/home-assistant/core/pull/153726\r\n[#153735]: https://github.com/home-assistant/core/pull/153735\r\n[#153736]: https://github.com/home-assistant/core/pull/153736\r\n[#153737]: https://github.com/home-assistant/core/pull/153737\r\n[#153739]: https://github.com/home-assistant/core/pull/153739\r\n[#153742]: https://github.com/home-assistant/core/pull/153742\r\n[#153743]: https://github.com/home-assistant/core/pull/153743\r\n[#153756]: https://github.com/home-assistant/core/pull/153756\r\n[#153759]: https://github.com/home-assistant/core/pull/153759\r\n[#153761]: https://github.com/home-assistant/core/pull/153761\r\n[#153790]: https://github.com/home-assistant/core/pull/153790\r\n[#153803]: https://github.com/home-assistant/core/pull/153803\r\n[#153826]: https://github.com/home-assistant/core/pull/153826\r\n[#153828]: https://github.com/home-assistant/core/pull/153828\r\n[#153830]: https://github.com/home-assistant/core/pull/153830\r\n[#153839]: https://github.com/home-assistant/core/pull/153839\r\n[#153840]: https://github.com/home-assistant/core/pull/153840\r\n[#153843]: https://github.com/home-assistant/core/pull/153843\r\n[#153853]: https://github.com/home-assistant/core/pull/153853\r\n[#153856]: https://github.com/home-assistant/core/pull/153856\r\n[#153868]: https://github.com/home-assistant/core/pull/153868\r\n[#153887]: https://github.com/home-assistant/core/pull/153887\r\n[#153890]: https://github.com/home-assistant/core/pull/153890\r\n[#153905]: https://github.com/home-assistant/core/pull/153905\r\n[#153914]: https://github.com/home-assistant/core/pull/153914\r\n[#153931]: https://github.com/home-assistant/core/pull/153931\r\n[#153933]: https://github.com/home-assistant/core/pull/153933\r\n[#153940]: https://github.com/home-assistant/core/pull/153940\r\n[#153950]: https://github.com/home-assistant/core/pull/153950\r\n[#153952]: https://github.com/home-assistant/core/pull/153952\r\n[#153957]: https://github.com/home-assistant/core/pull/153957\r\n[#153967]: https://github.com/home-assistant/core/pull/153967\r\n[#153996]: https://github.com/home-assistant/core/pull/153996\r\n[#154004]: https://github.com/home-assistant/core/pull/154004\r\n[#154070]: https://github.com/home-assistant/core/pull/154070\r\n[#154071]: https://github.com/home-assistant/core/pull/154071\r\n[#154080]: https://github.com/home-assistant/core/pull/154080\r\n[#154081]: https://github.com/home-assistant/core/pull/154081\r\n[#154113]: https://github.com/home-assistant/core/pull/154113\r\n[#154131]: https://github.com/home-assistant/core/pull/154131\r\n[#154143]: https://github.com/home-assistant/core/pull/154143\r\n[#154150]: https://github.com/home-assistant/core/pull/154150\r\n[#154154]: https://github.com/home-assistant/core/pull/154154\r\n[#154159]: https://github.com/home-assistant/core/pull/154159\r\n[#154182]: https://github.com/home-assistant/core/pull/154182\r\n[@AndyTempel]: https://github.com/AndyTempel\r\n[@CFenner]: https://github.com/CFenner\r\n[@CoMPaTech]: https://github.com/CoMPaTech\r\n[@Freebien]: https://github.com/Freebien\r\n[@Kinachi249]: https://github.com/Kinachi249\r\n[@Lash-L]: https://github.com/Lash-L\r\n[@Petro31]: https://github.com/Petro31\r\n[@Sander0542]: https://github.com/Sander0542\r\n[@Shulyaka]: https://github.com/Shulyaka\r\n[@TheJulianJES]: https://github.com/TheJulianJES\r\n[@Tommatheussen]: https://github.com/Tommatheussen\r\n[@arturpragacz]: https://github.com/arturpragacz\r\n[@bachya]: https://github.com/bachya\r\n[@balloob]: https://github.com/balloob\r\n[@bieniu]: https://github.com/bieniu\r\n[@bramkragten]: https://github.com/bramkragten\r\n[@cdnninja]: https://github.com/cdnninja\r\n[@chemelli74]: https://github.com/chemelli74\r\n[@derytive]: https://github.com/derytive\r\n[@edenhaus]: https://github.com/edenhaus\r\n[@epenet]: https://github.com/epenet\r\n[@fredrike]: https://github.com/fredrike\r\n[@frenck]: https://github.com/frenck\r\n[@gjohansson-ST]: https://github.com/gjohansson-ST\r\n[@hesselonline]: https://github.com/hesselonline\r\n[@jbouwh]: https://github.com/jbouwh\r\n[@joostlek]: https://github.com/joostlek\r\n[@jukrebs]: https://github.com/jukrebs\r\n[@michaeldavie]: https://github.com/michaeldavie\r\n[@oyvindwe]: https://github.com/oyvindwe\r\n[@peetersch]: https://github.com/peetersch\r\n[@peteS-UK]: https://github.com/peteS-UK\r\n[@piitaya]: https://github.com/piitaya\r\n[@puddly]: https://github.com/puddly\r\n[@thecode]: https://github.com/thecode\r\n[@timmo001]: https://github.com/timmo001\r\n[@tronikos]: https://github.com/tronikos\r\n[@zweckj]: https://github.com/zweckj\r\n[accuweather docs]: https://www.home-assistant.io/integrations/accuweather/\r\n[airgradient docs]: https://www.home-assistant.io/integrations/airgradient/\r\n[airos docs]: https://www.home-assistant.io/integrations/airos/\r\n[alexa_devices docs]: https://www.home-assistant.io/integrations/alexa_devices/\r\n[brother docs]: https://www.home-assistant.io/integrations/brother/\r\n[comelit docs]: https://www.home-assistant.io/integrations/comelit/\r\n[conversation docs]: https://www.home-assistant.io/integrations/conversation/\r\n[cync docs]: https://www.home-assistant.io/integrations/cync/\r\n[daikin docs]: https://www.home-assistant.io/integrations/daikin/\r\n[ecovacs docs]: https://www.home-assistant.io/integrations/ecovacs/\r\n[environment_canada docs]: https://www.home-assistant.io/integrations/environment_canada/\r\n[frontend docs]: https://www.home-assistant.io/integrations/frontend/\r\n[google_assistant_sdk docs]: https://www.home-assistant.io/integrations/google_assistant_sdk/\r\n[google_generative_ai_conversation docs]: https://www.home-assistant.io/integrations/google_generative_ai_conversation/\r\n[holiday docs]: https://www.home-assistant.io/integrations/holiday/\r\n[homeassistant_hardware docs]: https://www.home-assistant.io/integrations/homeassistant_hardware/\r\n[iometer docs]: https://www.home-assistant.io/integrations/iometer/\r\n[lamarzocco docs]: https://www.home-assistant.io/integrations/lamarzocco/\r\n[melcloud docs]: https://www.home-assistant.io/integrations/melcloud/\r\n[miele docs]: https://www.home-assistant.io/integrations/miele/\r\n[modbus docs]: https://www.home-assistant.io/integrations/modbus/\r\n[mqtt docs]: https://www.home-assistant.io/integrations/mqtt/\r\n[nordpool docs]: https://www.home-assistant.io/integrations/nordpool/\r\n[opower docs]: https://www.home-assistant.io/integrations/opower/\r\n[otbr docs]: https://www.home-assistant.io/integrations/otbr/\r\n[renault docs]: https://www.home-assistant.io/integrations/renault/\r\n[roborock docs]: https://www.home-assistant.io/integrations/roborock/\r\n[satel_integra docs]: https://www.home-assistant.io/integrations/satel_integra/\r\n[sharkiq docs]: https://www.home-assistant.io/integrations/sharkiq/\r\n[shelly docs]: https://www.home-assistant.io/integrations/shelly/\r\n[simplisafe docs]: https://www.home-assistant.io/integrations/simplisafe/\r\n[smartthings docs]: https://www.home-assistant.io/integrations/smartthings/\r\n[smlight docs]: https://www.home-assistant.io/integrations/smlight/\r\n[squeezebox docs]: https://www.home-assistant.io/integrations/squeezebox/\r\n[synology_dsm docs]: https://www.home-assistant.io/integrations/synology_dsm/\r\n[system_bridge docs]: https://www.home-assistant.io/integrations/system_bridge/\r\n[template docs]: https://www.home-assistant.io/integrations/template/\r\n[tuya docs]: https://www.home-assistant.io/integrations/tuya/\r\n[vesync docs]: https://www.home-assistant.io/integrations/vesync/\r\n[vicare docs]: https://www.home-assistant.io/integrations/vicare/\r\n[victron_remote_monitoring docs]: https://www.home-assistant.io/integrations/victron_remote_monitoring/\r\n[wallbox docs]: https://www.home-assistant.io/integrations/wallbox/\r\n[workday docs]: https://www.home-assistant.io/integrations/workday/\r\n[zha docs]: https://www.home-assistant.io/integrations/zha/\r\n[zwave_js docs]: https://www.home-assistant.io/integrations/zwave_js/",
+        "analyzed_at": "2025-11-06 00:35:25"
+      }
+    },
+    {
+      "repository": "home-assistant/core",
+      "release": "2025.10.1",
+      "analyzed_at": "2025-11-06 00:36:19",
+      "enhanced_new_features": [
+        {
+          "feature_type": "new_feature",
+          "description": "Z-Wave to support migrating from USB to socket with same home ID",
+          "pr_analyses": [
+            {
+              "pr_number": "153522",
+              "repo_name": "home-assistant/core",
+              "title": "Z-Wave to support migrating from USB to socket with same home ID",
+              "description": "<!--\r\n  You are amazing! Thanks for contributing to our project!\r\n  Please, DO NOT DELETE ANY TEXT from this template! (unless instructed).\r\n-->\r\n## Breaking change\r\n<!--\r\n  If your PR contains a breaking change for existing users, it is important\r\n  to tell them what breaks, how to make it work again and why we did this.\r\n  This piece of text is published with the release notes, so it helps if you\r\n  write it towards our users, not us.\r\n  Note: Remove this section if this PR is NOT a breaking change.\r\n-->\r\n\r\n\r\n## Proposed change\r\n<!--\r\n  Describe the big picture of your changes here to communicate to the\r\n  maintainers why we should accept this pull request. If it fixes a bug\r\n  or resolves a feature request, be sure to link to that issue in the\r\n  additional information section.\r\n-->\r\nWhen migrating a Z-Wave adapter from being connected via USB to being connected via socket (same home ID), update the existing config entry.\r\n\r\n## Type of change\r\n<!--\r\n  What type of change does your PR introduce to Home Assistant?\r\n  NOTE: Please, check only 1! box!\r\n  If your PR requires multiple boxes to be checked, you'll most likely need to\r\n  split it into multiple PRs. This makes things easier and faster to code review.\r\n-->\r\n\r\n- [ ] Dependency upgrade\r\n- [x] Bugfix (non-breaking change which fixes an issue)\r\n- [ ] New integration (thank you!)\r\n- [ ] New feature (which adds functionality to an existing integration)\r\n- [ ] Deprecation (breaking change to happen in the future)\r\n- [ ] Breaking change (fix/feature causing existing functionality to break)\r\n- [ ] Code quality improvements to existing code or addition of tests\r\n\r\n## Additional information\r\n<!--\r\n  Details are important, and help maintainers processing your PR.\r\n  Please be sure to fill out additional details, if applicable.\r\n-->\r\n\r\n- This PR fixes or closes issue: fixes #\r\n- This PR is related to issue: \r\n- Link to documentation pull request: \r\n- Link to developer documentation pull request: \r\n- Link to frontend pull request: \r\n\r\n## Checklist\r\n<!--\r\n  Put an `x` in the boxes that apply. You can also fill these out after\r\n  creating the PR. If you're unsure about any of them, don't hesitate to ask.\r\n  We're here to help! This is simply a reminder of what we are going to look\r\n  for before merging your code.\r\n\r\n  AI tools are welcome, but contributors are responsible for *fully*\r\n  understanding the code before submitting a PR.\r\n-->\r\n\r\n- [ ] I understand the code I am submitting and can explain how it works.\r\n- [ ] The code change is tested and works locally.\r\n- [ ] Local tests pass. **Your PR cannot be merged unless tests pass**\r\n- [ ] There is no commented out code in this PR.\r\n- [ ] I have followed the [development checklist][dev-checklist]\r\n- [ ] I have followed the [perfect PR recommendations][perfect-pr]\r\n- [ ] The code has been formatted using Ruff (`ruff format homeassistant tests`)\r\n- [ ] Tests have been added to verify that the new code works.\r\n- [ ] Any generated code has been carefully reviewed for correctness and compliance with project standards.\r\n\r\nIf user exposed functionality or configuration variables are added/changed:\r\n\r\n- [ ] Documentation added/updated for [www.home-assistant.io][docs-repository]\r\n\r\nIf the code communicates with devices, web services, or third-party tools:\r\n\r\n- [ ] The [manifest file][manifest-docs] has all fields filled out correctly.  \r\n      Updated and included derived files by running: `python3 -m script.hassfest`.\r\n- [ ] New or updated dependencies have been added to `requirements_all.txt`.  \r\n      Updated by running `python3 -m script.gen_requirements_all`.\r\n- [ ] For the updated dependencies - a link to the changelog, or at minimum a diff between library versions is added to the PR description.\r\n\r\n<!--\r\n  This project is very active and we have a high turnover of pull requests.\r\n\r\n  Unfortunately, the number of incoming pull requests is higher than what our\r\n  reviewers can review and merge so there is a long backlog of pull requests\r\n  waiting for review. You can help here!\r\n  \r\n  By reviewing another pull request, you will help raise the code quality of\r\n  that pull request and the final review will be faster. This way the general\r\n  pace of pull request reviews will go up and your wait time will go down.\r\n  \r\n  When picking a pull request to review, try to choose one that hasn't yet\r\n  been reviewed.\r\n\r\n  Thanks for helping out!\r\n-->\r\n\r\nTo help with the load of incoming pull requests:\r\n\r\n- [ ] I have reviewed two other [open pull requests][prs] in this repository.\r\n\r\n[prs]: https://github.com/home-assistant/core/pulls?q=is%3Aopen+is%3Apr+-author%3A%40me+-draft%3Atrue+-label%3Awaiting-for-upstream+sort%3Acreated-desc+review%3Anone+-status%3Afailure\r\n\r\n<!--\r\n  Thank you for contributing <3\r\n\r\n  Below, some useful links you could explore:\r\n-->\r\n[dev-checklist]: https://developers.home-assistant.io/docs/development_checklist/\r\n[manifest-docs]: https://developers.home-assistant.io/docs/creating_integration_manifest/\r\n[quality-scale]: https://developers.home-assistant.io/docs/integration_quality_scale_index/\r\n[docs-repository]: https://github.com/home-assistant/home-assistant.io\r\n[perfect-pr]: https://developers.home-assistant.io/docs/review-process/#creating-the-perfect-pr\r\n",
+              "state": "closed",
+              "merged": true,
+              "base_commit": {
+                "sha": "982166df3cd420ea6b16c6b284838e0cea873a9f",
+                "message": "Remove module recorder.history.modern (#153502)",
+                "date": "2025-10-02T23:00:09Z",
+                "author": "Erik Montnemery"
+              },
+              "head_commit": {
+                "sha": "43b5ea90eeb2a49011d903fdc4bf080d2c661623",
+                "message": "Fix test",
+                "date": "2025-10-03T14:38:00Z",
+                "author": "Paulus Schoutsen"
+              },
+              "file_changes": [
+                {
+                  "filename": "homeassistant/components/zwave_js/config_flow.py",
+                  "status": "modified",
+                  "additions": 14,
+                  "deletions": 2,
+                  "changes": 16,
+                  "patch": "@@ -918,7 +918,7 @@ async def async_step_finish_addon_setup_user(\n             discovery_info = await self._async_get_addon_discovery_info()\n             self.ws_address = f\"ws://{discovery_info['host']}:{discovery_info['port']}\"\n \n-        if not self.unique_id or self.source in (SOURCE_USB, SOURCE_ESPHOME):\n+        if not self.unique_id or self.source == SOURCE_USB:\n             if not self.version_info:\n                 try:\n                     self.version_info = await async_get_version_info(\n@@ -942,7 +942,12 @@ async def async_step_finish_addon_setup_user(\n                 CONF_S2_UNAUTHENTICATED_KEY: self.s2_unauthenticated_key,\n                 CONF_LR_S2_ACCESS_CONTROL_KEY: self.lr_s2_access_control_key,\n                 CONF_LR_S2_AUTHENTICATED_KEY: self.lr_s2_authenticated_key,\n-            }\n+            },\n+            error=(\n+                \"migration_successful\"\n+                if self.source in (SOURCE_USB, SOURCE_ESPHOME)\n+                else \"already_configured\"\n+            ),\n         )\n         return self._async_create_entry_from_vars()\n \n@@ -1490,6 +1495,8 @@ async def async_step_esphome(\n             )\n             # Only update existing entries that are configured via sockets\n             and existing_entry.data.get(CONF_SOCKET_PATH)\n+            # And use the add-on\n+            and existing_entry.data.get(CONF_USE_ADDON)\n         ):\n             await self._async_set_addon_config(\n                 {CONF_ADDON_SOCKET: discovery_info.socket_path}\n@@ -1498,6 +1505,11 @@ async def async_step_esphome(\n             self.hass.config_entries.async_schedule_reload(existing_entry.entry_id)\n             return self.async_abort(reason=\"already_configured\")\n \n+        # We are not aborting if home ID configured here, we just want to make sure that it's set\n+        # We will update a USB based config entry automatically in `async_step_finish_addon_setup_user`\n+        await self.async_set_unique_id(\n+            str(discovery_info.zwave_home_id), raise_on_progress=False\n+        )\n         self.socket_path = discovery_info.socket_path\n         self.context[\"title_placeholders\"] = {\n             CONF_NAME: f\"{discovery_info.name} via ESPHome\""
+                },
+                {
+                  "filename": "tests/components/zwave_js/test_config_flow.py",
+                  "status": "modified",
+                  "additions": 116,
+                  "deletions": 1,
+                  "changes": 117,
+                  "patch": "@@ -1303,7 +1303,11 @@ async def test_esphome_discovery_already_configured(\n     entry = MockConfigEntry(\n         entry_id=\"mock-entry-id\",\n         domain=DOMAIN,\n-        data={CONF_SOCKET_PATH: \"esphome://existing-device:6053\"},\n+        data={\n+            CONF_SOCKET_PATH: \"esphome://existing-device:6053\",\n+            \"use_addon\": True,\n+            \"integration_created_addon\": True,\n+        },\n         title=TITLE,\n         unique_id=\"1234\",\n     )\n@@ -1333,6 +1337,117 @@ async def test_esphome_discovery_already_configured(\n     )\n \n \n+@pytest.mark.usefixtures(\"supervisor\", \"addon_not_installed\", \"addon_info\")\n+async def test_esphome_discovery_usb_same_home_id(\n+    hass: HomeAssistant,\n+    install_addon: AsyncMock,\n+    set_addon_options: AsyncMock,\n+    start_addon: AsyncMock,\n+) -> None:\n+    \"\"\"Test ESPHome discovery works if USB stick with same home ID is configured.\"\"\"\n+    entry = MockConfigEntry(\n+        entry_id=\"mock-entry-id\",\n+        domain=DOMAIN,\n+        data={\n+            CONF_USB_PATH: \"/dev/ttyUSB0\",\n+            \"use_addon\": True,\n+            \"integration_created_addon\": True,\n+        },\n+        title=TITLE,\n+        unique_id=\"1234\",\n+    )\n+    entry.add_to_hass(hass)\n+\n+    result = await hass.config_entries.flow.async_init(\n+        DOMAIN,\n+        context={\"source\": config_entries.SOURCE_ESPHOME},\n+        data=ESPHOME_DISCOVERY_INFO,\n+    )\n+\n+    assert result[\"type\"] is FlowResultType.MENU\n+    assert result[\"step_id\"] == \"installation_type\"\n+    assert result[\"menu_options\"] == [\"intent_recommended\", \"intent_custom\"]\n+\n+    result = await hass.config_entries.flow.async_configure(\n+        result[\"flow_id\"], {\"next_step_id\": \"intent_custom\"}\n+    )\n+\n+    assert result[\"step_id\"] == \"install_addon\"\n+    assert result[\"type\"] is FlowResultType.SHOW_PROGRESS\n+\n+    # Make sure the flow continues when the progress task is done.\n+    await hass.async_block_till_done()\n+\n+    result = await hass.config_entries.flow.async_configure(result[\"flow_id\"])\n+\n+    assert install_addon.call_args == call(\"core_zwave_js\")\n+\n+    assert result[\"type\"] is FlowResultType.FORM\n+    assert result[\"step_id\"] == \"network_type\"\n+\n+    result = await hass.config_entries.flow.async_configure(\n+        result[\"flow_id\"],\n+        {\n+            \"network_type\": \"existing\",\n+        },\n+    )\n+\n+    assert result[\"type\"] is FlowResultType.FORM\n+    assert result[\"step_id\"] == \"configure_security_keys\"\n+\n+    result = await hass.config_entries.flow.async_configure(\n+        result[\"flow_id\"],\n+        {\n+            \"s0_legacy_key\": \"new123\",\n+            \"s2_access_control_key\": \"new456\",\n+            \"s2_authenticated_key\": \"new789\",\n+            \"s2_unauthenticated_key\": \"new987\",\n+            \"lr_s2_access_control_key\": \"new654\",\n+            \"lr_s2_authenticated_key\": \"new321\",\n+        },\n+    )\n+\n+    assert set_addon_options.call_args == call(\n+        \"core_zwave_js\",\n+        AddonsOptions(\n+            config={\n+                \"socket\": \"esphome://192.168.1.100:6053\",\n+                \"s0_legacy_key\": \"new123\",\n+                \"s2_access_control_key\": \"new456\",\n+                \"s2_authenticated_key\": \"new789\",\n+                \"s2_unauthenticated_key\": \"new987\",\n+                \"lr_s2_access_control_key\": \"new654\",\n+                \"lr_s2_authenticated_key\": \"new321\",\n+            }\n+        ),\n+    )\n+\n+    assert result[\"type\"] is FlowResultType.SHOW_PROGRESS\n+    assert result[\"step_id\"] == \"start_addon\"\n+\n+    await hass.async_block_till_done()\n+    result = await hass.config_entries.flow.async_configure(result[\"flow_id\"])\n+    await hass.async_block_till_done()\n+\n+    assert start_addon.call_args == call(\"core_zwave_js\")\n+\n+    assert result[\"type\"] is FlowResultType.ABORT\n+    assert result[\"reason\"] == \"migration_successful\"\n+    assert entry.data == {\n+        \"url\": \"ws://host1:3001\",\n+        \"usb_path\": None,\n+        \"socket_path\": \"esphome://192.168.1.100:6053\",\n+        \"s0_legacy_key\": \"new123\",\n+        \"s2_access_control_key\": \"new456\",\n+        \"s2_authenticated_key\": \"new789\",\n+        \"s2_unauthenticated_key\": \"new987\",\n+        \"lr_s2_access_control_key\": \"new654\",\n+        \"lr_s2_authenticated_key\": \"new321\",\n+        \"use_addon\": True,\n+        \"integration_created_addon\": True,\n+    }\n+\n+\n @pytest.mark.usefixtures(\"supervisor\", \"addon_installed\")\n async def test_discovery_addon_not_running(\n     hass: HomeAssistant,"
+                }
+              ],
+              "detailed_description": "I want to migrate my Z-Wave adapter from USB connection to socket connection while keeping the same home ID, and have the system automatically update my existing configuration entry instead of creating a duplicate.\n\nWhen I'm setting up my Z-Wave integration and I switch from using a USB adapter to a socket connection with the same home ID, I want the system to recognize that this is the same Z-Wave network and update my existing configuration rather than treating it as a new setup. This should work whether I'm using the Z-Wave JS add-on or connecting via ESPHome.\n\nSpecifically, I want the system to handle these scenarios:\n\nWhen I'm completing the add-on setup process, if I previously configured via USB or ESPHome, the system should treat this as a successful migration rather than showing an \"already configured\" error. The system should still collect all the necessary security keys and version information during setup, but then update my existing entry with the new socket connection details.\n\nWhen I'm setting up through ESPHome discovery, if there's already an existing configuration that uses socket connection with the add-on, I want the system to automatically update the add-on configuration to use the new socket path and reload the existing entry. However, if I'm migrating from USB to socket, I don't want the system to abort the setup - instead, I want it to set the unique home ID and proceed with updating my configuration.\n\nThe system should be smart enough to distinguish between these different migration scenarios and handle them appropriately without requiring me to manually delete and recreate my Z-Wave configuration. All my existing devices, settings, and network information should be preserved during this migration process.\n\nI also want clear feedback during the setup process so I understand when a migration is happening versus when a new configuration is being created. The system should handle all the technical details of updating the connection method while maintaining my Z-Wave network's integrity and configuration.",
+              "has_tests": true,
+              "test_files": [
+                "tests/components/zwave_js/test_config_flow.py"
+              ],
+              "only_modified_existing_functions": true,
+              "non_test_files": [
+                "homeassistant/components/zwave_js/config_flow.py"
+              ],
+              "analyzed_at": "2025-11-06 01:09:31"
+            }
+          ],
+          "feature_detailed_description": "I want to migrate my Z-Wave adapter from USB connection to socket connection while keeping the same home ID, and have the system automatically update my existing configuration entry instead of creating a duplicate.\n\nWhen I'm setting up my Z-Wave integration and I switch from using a USB adapter to a socket connection with the same home ID, I want the system to recognize that this is the same Z-Wave network and update my existing configuration rather than treating it as a new setup. This should work whether I'm using the Z-Wave JS add-on or connecting via ESPHome.\n\nSpecifically, I want the system to handle these scenarios:\n\nWhen I'm completing the add-on setup process, if I previously configured via USB or ESPHome, the system should treat this as a successful migration rather than showing an \"already configured\" error. The system should still collect all the necessary security keys and version information during setup, but then update my existing entry with the new socket connection details.\n\nWhen I'm setting up through ESPHome discovery, if there's already an existing configuration that uses socket connection with the add-on, I want the system to automatically update the add-on configuration to use the new socket path and reload the existing entry. However, if I'm migrating from USB to socket, I don't want the system to abort the setup - instead, I want it to set the unique home ID and proceed with updating my configuration.\n\nThe system should be smart enough to distinguish between these different migration scenarios and handle them appropriately without requiring me to manually delete and recreate my Z-Wave configuration. All my existing devices, settings, and network information should be preserved during this migration process.\n\nI also want clear feedback during the setup process so I understand when a migration is happening versus when a new configuration is being created. The system should handle all the technical details of updating the connection method while maintaining my Z-Wave network's integrity and configuration."
+        },
+        {
+          "feature_type": "new_feature",
+          "description": "When discovering a Z-Wave adapter, always configure add-on in config flow",
+          "pr_analyses": [
+            {
+              "pr_number": "153575",
+              "repo_name": "home-assistant/core",
+              "title": "When discovering a Z-Wave adapter, always configure add-on in config flow",
+              "description": "\r\n\r\n<!--\r\n  You are amazing! Thanks for contributing to our project!\r\n  Please, DO NOT DELETE ANY TEXT from this template! (unless instructed).\r\n-->\r\n## Breaking change\r\n<!--\r\n  If your PR contains a breaking change for existing users, it is important\r\n  to tell them what breaks, how to make it work again and why we did this.\r\n  This piece of text is published with the release notes, so it helps if you\r\n  write it towards our users, not us.\r\n  Note: Remove this section if this PR is NOT a breaking change.\r\n-->\r\n\r\n\r\n## Proposed change\r\n<!--\r\n  Describe the big picture of your changes here to communicate to the\r\n  maintainers why we should accept this pull request. If it fixes a bug\r\n  or resolves a feature request, be sure to link to that issue in the\r\n  additional information section.\r\n-->\r\nFixes issue in Z-Wave JS: add-on running state represents source of truth\r\n\r\nWhen the config entry is set-up, we have a method `async_ensure_addon_running`. This method acts as follows:\r\n- If add-on is running, it is the source of truth. That means that the add-on options will be copied back into the config entry.\r\n- Any other state, the config entry is the source of truth. That means that the config entry options are copied into the add-on.\r\n\r\nWith Z-Wave socket connections, the add-on is actually running for like 10 seconds before it hits a timeout (if the IP is no longer valid). This broke the assumption. Previously it could also happen, but very rarily, because addon starts, tries to connect to serial, dies.\r\n\r\nNow the config flow is updated that when an adapter is discovered and the user configures it, we will always update the add-on options.\r\n\r\n## Type of change\r\n<!--\r\n  What type of change does your PR introduce to Home Assistant?\r\n  NOTE: Please, check only 1! box!\r\n  If your PR requires multiple boxes to be checked, you'll most likely need to\r\n  split it into multiple PRs. This makes things easier and faster to code review.\r\n-->\r\n\r\n- [ ] Dependency upgrade\r\n- [x] Bugfix (non-breaking change which fixes an issue)\r\n- [ ] New integration (thank you!)\r\n- [ ] New feature (which adds functionality to an existing integration)\r\n- [ ] Deprecation (breaking change to happen in the future)\r\n- [ ] Breaking change (fix/feature causing existing functionality to break)\r\n- [ ] Code quality improvements to existing code or addition of tests\r\n\r\n## Additional information\r\n<!--\r\n  Details are important, and help maintainers processing your PR.\r\n  Please be sure to fill out additional details, if applicable.\r\n-->\r\n\r\n- This PR fixes or closes issue: fixes #\r\n- This PR is related to issue: \r\n- Link to documentation pull request: \r\n- Link to developer documentation pull request: \r\n- Link to frontend pull request: \r\n\r\n## Checklist\r\n<!--\r\n  Put an `x` in the boxes that apply. You can also fill these out after\r\n  creating the PR. If you're unsure about any of them, don't hesitate to ask.\r\n  We're here to help! This is simply a reminder of what we are going to look\r\n  for before merging your code.\r\n\r\n  AI tools are welcome, but contributors are responsible for *fully*\r\n  understanding the code before submitting a PR.\r\n-->\r\n\r\n- [ ] I understand the code I am submitting and can explain how it works.\r\n- [ ] The code change is tested and works locally.\r\n- [ ] Local tests pass. **Your PR cannot be merged unless tests pass**\r\n- [ ] There is no commented out code in this PR.\r\n- [ ] I have followed the [development checklist][dev-checklist]\r\n- [ ] I have followed the [perfect PR recommendations][perfect-pr]\r\n- [ ] The code has been formatted using Ruff (`ruff format homeassistant tests`)\r\n- [ ] Tests have been added to verify that the new code works.\r\n- [ ] Any generated code has been carefully reviewed for correctness and compliance with project standards.\r\n\r\nIf user exposed functionality or configuration variables are added/changed:\r\n\r\n- [ ] Documentation added/updated for [www.home-assistant.io][docs-repository]\r\n\r\nIf the code communicates with devices, web services, or third-party tools:\r\n\r\n- [ ] The [manifest file][manifest-docs] has all fields filled out correctly.  \r\n      Updated and included derived files by running: `python3 -m script.hassfest`.\r\n- [ ] New or updated dependencies have been added to `requirements_all.txt`.  \r\n      Updated by running `python3 -m script.gen_requirements_all`.\r\n- [ ] For the updated dependencies - a link to the changelog, or at minimum a diff between library versions is added to the PR description.\r\n\r\n<!--\r\n  This project is very active and we have a high turnover of pull requests.\r\n\r\n  Unfortunately, the number of incoming pull requests is higher than what our\r\n  reviewers can review and merge so there is a long backlog of pull requests\r\n  waiting for review. You can help here!\r\n  \r\n  By reviewing another pull request, you will help raise the code quality of\r\n  that pull request and the final review will be faster. This way the general\r\n  pace of pull request reviews will go up and your wait time will go down.\r\n  \r\n  When picking a pull request to review, try to choose one that hasn't yet\r\n  been reviewed.\r\n\r\n  Thanks for helping out!\r\n-->\r\n\r\nTo help with the load of incoming pull requests:\r\n\r\n- [ ] I have reviewed two other [open pull requests][prs] in this repository.\r\n\r\n[prs]: https://github.com/home-assistant/core/pulls?q=is%3Aopen+is%3Apr+-author%3A%40me+-draft%3Atrue+-label%3Awaiting-for-upstream+sort%3Acreated-desc+review%3Anone+-status%3Afailure\r\n\r\n<!--\r\n  Thank you for contributing <3\r\n\r\n  Below, some useful links you could explore:\r\n-->\r\n[dev-checklist]: https://developers.home-assistant.io/docs/development_checklist/\r\n[manifest-docs]: https://developers.home-assistant.io/docs/creating_integration_manifest/\r\n[quality-scale]: https://developers.home-assistant.io/docs/integration_quality_scale_index/\r\n[docs-repository]: https://github.com/home-assistant/home-assistant.io\r\n[perfect-pr]: https://developers.home-assistant.io/docs/review-process/#creating-the-perfect-pr\r\n",
+              "state": "closed",
+              "merged": true,
+              "base_commit": {
+                "sha": "3f9421ab0801a339e62506c0c123066c53810efb",
+                "message": "Debounce updates in Idasen Desk (#153503)",
+                "date": "2025-10-03T16:39:14Z",
+                "author": "Abílio Costa"
+              },
+              "head_commit": {
+                "sha": "1786e6d0ebf755da9131b46e1f0402c8718fd34d",
+                "message": "When discovering a Z-Wave adapter, always configure add-on in config flow",
+                "date": "2025-10-03T17:06:05Z",
+                "author": "Paulus Schoutsen"
+              },
+              "file_changes": [
+                {
+                  "filename": "homeassistant/components/zwave_js/config_flow.py",
+                  "status": "modified",
+                  "additions": 29,
+                  "deletions": 3,
+                  "changes": 32,
+                  "patch": "@@ -703,7 +703,15 @@ async def async_step_rf_region(\n     async def async_step_on_supervisor(\n         self, user_input: dict[str, Any] | None = None\n     ) -> ConfigFlowResult:\n-        \"\"\"Handle logic when on Supervisor host.\"\"\"\n+        \"\"\"Handle logic when on Supervisor host.\n+\n+        When the add-on is running, we copy over it's settings.\n+        We will ignore settings for USB/Socket if those were discovered.\n+\n+        If add-on is not running, we will configure the add-on.\n+\n+        When it's not installed, we install it with new config options.\n+        \"\"\"\n         if user_input is None:\n             return self.async_show_form(\n                 step_id=\"on_supervisor\", data_schema=ON_SUPERVISOR_SCHEMA\n@@ -717,8 +725,11 @@ async def async_step_on_supervisor(\n \n         if addon_info.state == AddonState.RUNNING:\n             addon_config = addon_info.options\n-            self.usb_path = addon_config.get(CONF_ADDON_DEVICE)\n-            self.socket_path = addon_config.get(CONF_ADDON_SOCKET)\n+            # Use the options set by USB/ESPHome discovery\n+            if not self._adapter_discovered:\n+                self.usb_path = addon_config.get(CONF_ADDON_DEVICE)\n+                self.socket_path = addon_config.get(CONF_ADDON_SOCKET)\n+\n             self.s0_legacy_key = addon_config.get(CONF_ADDON_S0_LEGACY_KEY, \"\")\n             self.s2_access_control_key = addon_config.get(\n                 CONF_ADDON_S2_ACCESS_CONTROL_KEY, \"\"\n@@ -931,6 +942,21 @@ async def async_step_finish_addon_setup_user(\n                 str(self.version_info.home_id), raise_on_progress=False\n             )\n \n+        # When we came from discovery, make sure we update the add-on\n+        if self._adapter_discovered and self.use_addon:\n+            await self._async_set_addon_config(\n+                {\n+                    CONF_ADDON_DEVICE: self.usb_path,\n+                    CONF_ADDON_SOCKET: self.socket_path,\n+                    CONF_ADDON_S0_LEGACY_KEY: self.s0_legacy_key,\n+                    CONF_ADDON_S2_ACCESS_CONTROL_KEY: self.s2_access_control_key,\n+                    CONF_ADDON_S2_AUTHENTICATED_KEY: self.s2_authenticated_key,\n+                    CONF_ADDON_S2_UNAUTHENTICATED_KEY: self.s2_unauthenticated_key,\n+                    CONF_ADDON_LR_S2_ACCESS_CONTROL_KEY: self.lr_s2_access_control_key,\n+                    CONF_ADDON_LR_S2_AUTHENTICATED_KEY: self.lr_s2_authenticated_key,\n+                }\n+            )\n+\n         self._abort_if_unique_id_configured(\n             updates={\n                 CONF_URL: self.ws_address,"
+                },
+                {
+                  "filename": "tests/components/zwave_js/test_config_flow.py",
+                  "status": "modified",
+                  "additions": 77,
+                  "deletions": 1,
+                  "changes": 78,
+                  "patch": "@@ -1168,7 +1168,7 @@ async def mock_restore_nvm(data: bytes, options: dict[str, bool] | None = None):\n \n \n @pytest.mark.usefixtures(\"supervisor\", \"addon_not_installed\", \"addon_info\")\n-async def test_esphome_discovery(\n+async def test_esphome_discovery_intent_custom(\n     hass: HomeAssistant,\n     install_addon: AsyncMock,\n     set_addon_options: AsyncMock,\n@@ -1290,6 +1290,82 @@ async def test_esphome_discovery(\n     assert len(mock_setup_entry.mock_calls) == 1\n \n \n+@pytest.mark.usefixtures(\"supervisor\", \"addon_installed\", \"addon_running\", \"addon_info\")\n+async def test_esphome_discovery_intent_recommended(\n+    hass: HomeAssistant,\n+    set_addon_options: AsyncMock,\n+    addon_options: dict,\n+) -> None:\n+    \"\"\"Test ESPHome discovery success path.\"\"\"\n+    addon_options.update(\n+        {\n+            CONF_ADDON_DEVICE: \"/dev/ttyUSB0\",\n+            CONF_ADDON_SOCKET: None,\n+            \"s0_legacy_key\": \"new123\",\n+            \"s2_access_control_key\": \"new456\",\n+            \"s2_authenticated_key\": \"new789\",\n+            \"s2_unauthenticated_key\": \"new987\",\n+            \"lr_s2_access_control_key\": \"new654\",\n+            \"lr_s2_authenticated_key\": \"new321\",\n+        }\n+    )\n+    result = await hass.config_entries.flow.async_init(\n+        DOMAIN,\n+        context={\"source\": config_entries.SOURCE_ESPHOME},\n+        data=ESPHOME_DISCOVERY_INFO,\n+    )\n+\n+    assert result[\"type\"] is FlowResultType.MENU\n+    assert result[\"step_id\"] == \"installation_type\"\n+    assert result[\"menu_options\"] == [\"intent_recommended\", \"intent_custom\"]\n+\n+    with (\n+        patch(\n+            \"homeassistant.components.zwave_js.async_setup\", return_value=True\n+        ) as mock_setup,\n+        patch(\n+            \"homeassistant.components.zwave_js.async_setup_entry\",\n+            return_value=True,\n+        ) as mock_setup_entry,\n+    ):\n+        result = await hass.config_entries.flow.async_configure(\n+            result[\"flow_id\"], {\"next_step_id\": \"intent_recommended\"}\n+        )\n+\n+    assert result[\"type\"] is FlowResultType.CREATE_ENTRY\n+    assert result[\"title\"] == TITLE\n+    assert result[\"result\"].unique_id == str(ESPHOME_DISCOVERY_INFO.zwave_home_id)\n+    assert result[\"data\"] == {\n+        \"url\": \"ws://host1:3001\",\n+        \"usb_path\": None,\n+        \"socket_path\": \"esphome://192.168.1.100:6053\",\n+        \"s0_legacy_key\": \"new123\",\n+        \"s2_access_control_key\": \"new456\",\n+        \"s2_authenticated_key\": \"new789\",\n+        \"s2_unauthenticated_key\": \"new987\",\n+        \"lr_s2_access_control_key\": \"new654\",\n+        \"lr_s2_authenticated_key\": \"new321\",\n+        \"use_addon\": True,\n+        \"integration_created_addon\": False,\n+    }\n+    assert set_addon_options.call_args == call(\n+        \"core_zwave_js\",\n+        AddonsOptions(\n+            config={\n+                \"socket\": \"esphome://192.168.1.100:6053\",\n+                \"s0_legacy_key\": \"new123\",\n+                \"s2_access_control_key\": \"new456\",\n+                \"s2_authenticated_key\": \"new789\",\n+                \"s2_unauthenticated_key\": \"new987\",\n+                \"lr_s2_access_control_key\": \"new654\",\n+                \"lr_s2_authenticated_key\": \"new321\",\n+            }\n+        ),\n+    )\n+    assert len(mock_setup.mock_calls) == 1\n+    assert len(mock_setup_entry.mock_calls) == 1\n+\n+\n @pytest.mark.usefixtures(\"supervisor\", \"addon_installed\", \"addon_info\")\n async def test_esphome_discovery_already_configured(\n     hass: HomeAssistant,"
+                }
+              ],
+              "detailed_description": "I want to ensure that when my Z-Wave adapter is automatically discovered and I configure it through the setup process, the system always updates the Z-Wave add-on with the correct configuration settings. \n\nCurrently, there's an issue where if the add-on is running but can't actually connect to my Z-Wave adapter (like when the IP address is no longer valid), the system incorrectly treats the add-on as the source of truth and copies its outdated settings back to the main configuration. This causes problems because the add-on might appear to be running for a short time before timing out, but it doesn't have the correct connection information.\n\nWhat I need is for the system to handle this situation properly by always updating the add-on configuration with my chosen settings when I'm setting up a discovered adapter. Specifically:\n\nWhen I'm going through the configuration flow and my Z-Wave adapter was discovered automatically, I want the system to always push my selected configuration to the add-on, regardless of whether the add-on appears to be running or not. This includes settings like the USB device path, socket path, and all the security keys I've configured.\n\nDuring the setup process on a Supervisor system, I want the system to be smart about when it copies settings from the add-on. If my adapter was discovered automatically, I don't want the system to overwrite my discovered settings with whatever might be in the add-on configuration. But if I'm setting up manually without discovery, then it should still use the add-on's current settings as a starting point.\n\nWhen I complete the add-on setup as a user, I want the system to automatically update the add-on with all my configuration choices if the adapter was discovered. This should include the device path, socket path, and all the security keys I've specified.\n\nThe key outcome I want is that my Z-Wave setup always uses the correct configuration I've chosen during setup, especially when the system automatically discovers my adapter, and that the add-on gets properly configured with these settings every time.",
+              "has_tests": true,
+              "test_files": [
+                "tests/components/zwave_js/test_config_flow.py"
+              ],
+              "only_modified_existing_functions": true,
+              "non_test_files": [
+                "homeassistant/components/zwave_js/config_flow.py"
+              ],
+              "analyzed_at": "2025-11-06 01:10:47"
+            }
+          ],
+          "feature_detailed_description": "I want to ensure that when my Z-Wave adapter is automatically discovered and I configure it through the setup process, the system always updates the Z-Wave add-on with the correct configuration settings. \n\nCurrently, there's an issue where if the add-on is running but can't actually connect to my Z-Wave adapter (like when the IP address is no longer valid), the system incorrectly treats the add-on as the source of truth and copies its outdated settings back to the main configuration. This causes problems because the add-on might appear to be running for a short time before timing out, but it doesn't have the correct connection information.\n\nWhat I need is for the system to handle this situation properly by always updating the add-on configuration with my chosen settings when I'm setting up a discovered adapter. Specifically:\n\nWhen I'm going through the configuration flow and my Z-Wave adapter was discovered automatically, I want the system to always push my selected configuration to the add-on, regardless of whether the add-on appears to be running or not. This includes settings like the USB device path, socket path, and all the security keys I've configured.\n\nDuring the setup process on a Supervisor system, I want the system to be smart about when it copies settings from the add-on. If my adapter was discovered automatically, I don't want the system to overwrite my discovered settings with whatever might be in the add-on configuration. But if I'm setting up manually without discovery, then it should still use the add-on's current settings as a starting point.\n\nWhen I complete the add-on setup as a user, I want the system to automatically update the add-on with all my configuration choices if the adapter was discovered. This should include the device path, socket path, and all the security keys I've specified.\n\nThe key outcome I want is that my Z-Wave setup always uses the correct configuration I've chosen during setup, especially when the system automatically discovers my adapter, and that the add-on gets properly configured with these settings every time."
+        }
+      ],
+      "original_analysis": {
+        "tag_name": "2025.10.1",
+        "repo_name": "home-assistant/core",
+        "new_features": [
+          {
+            "feature_type": "new_feature",
+            "description": "Add Roborock mop intensity translations",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153380"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "Add missing translation for media browser default title",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153430"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "Add translation for turbo fan mode in SmartThings",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153445"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "Z-Wave to support migrating from USB to socket with same home ID",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153522"
+            ]
+          },
+          {
+            "feature_type": "new_feature",
+            "description": "When discovering a Z-Wave adapter, always configure add-on in config flow",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153575"
+            ]
+          }
+        ],
+        "improvements": [
+          {
+            "feature_type": "improvement",
+            "description": "Increase onedrive upload chunk size",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153406"
+            ]
+          },
+          {
+            "feature_type": "improvement",
+            "description": "Debounce updates in Idasen Desk",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153503"
+            ]
+          }
+        ],
+        "bug_fixes": [
+          {
+            "feature_type": "bug_fix",
+            "description": "Do not reset the adapter twice during ZHA options flow migration",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153345"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix Nord Pool 15 minute interval",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153350"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Explicitly check for None in raw value processing of modbus",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153352"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Set config entry to None in ProxmoxVE",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153357"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Explicit pass in the config entry to coordinator in airtouch4",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153361"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Correct blocking update in ToGrill with lack of notifications",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153387"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Pushover: Handle empty data section properly",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153397"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Disable thinking for unsupported gemini models",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153415"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix Satel Integra creating new binary sensors on YAML import",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153419"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix Z-Wave RGB light turn on causing rare ZeroDivisionError",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153422"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix sentence-casing in user-facing strings of slack",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153427"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix missing powerconsumptionreport in Smartthings",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153438"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Disable baudrate bootloader reset for ZBT-2",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153443"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix next event in workday calendar",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153465"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix missing parameter pass in onedrive",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153478"
+            ]
+          },
+          {
+            "feature_type": "bug_fix",
+            "description": "Fix VeSync zero fan speed handling",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153493"
+            ]
+          }
+        ],
+        "other_changes": [
+          {
+            "feature_type": "other",
+            "description": "Bump airOS dependency",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153065"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump airOS module for alternative login url",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153317"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump aiohasupervisor to 0.3.3",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153344"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump python-roborock to 2.49.1",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153396"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump pyportainer 1.0.2",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153326"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump pyportainer 1.0.3",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153413"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Update markdown field description in ntfy integration",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153421"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump aiohomekit to 3.2.19",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153423"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Update Home Assistant base image to 2025.10.0",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153441"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Update OVOEnergy to 3.0.1",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153476"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump pyTibber to 0.32.2",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153484"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump reolink-aio to 0.16.1",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153489"
+            ]
+          },
+          {
+            "feature_type": "other",
+            "description": "Bump universal-silabs-flasher to 0.0.35",
+            "pr_links": [
+              "https://github.com/home-assistant/core/pull/153500"
+            ]
+          }
+        ],
+        "processed_body": "- Bump airOS dependency ([@CoMPaTech] - [#153065]) ([airos docs]) (dependency)\r\n- Bump airOS module for alternative login url ([@CoMPaTech] - [#153317]) ([airos docs]) (dependency)\r\n- Bump aiohasupervisor to 0.3.3 ([@agners] - [#153344]) ([hassio docs]) (dependency)\r\n- Do not reset the adapter twice during ZHA options flow migration ([@puddly] - [#153345]) ([zha docs])\r\n- Fix Nord Pool 15 minute interval ([@gjohansson-ST] - [#153350]) ([nordpool docs])\r\n- Explicitly check for None in raw value processing of modbus ([@alengwenus] - [#153352]) ([modbus docs])\r\n- Set config entry to None in ProxmoxVE ([@mib1185] - [#153357]) ([proxmoxve docs])\r\n- Explicit pass in the config entry to coordinator in airtouch4 ([@mib1185] - [#153361]) ([airtouch4 docs])\r\n- Add Roborock mop intensity translations ([@starkillerOG] - [#153380]) ([roborock docs])\r\n- Correct blocking update in ToGrill with lack of notifications ([@elupus] - [#153387]) ([togrill docs])\r\n- Bump python-roborock to 2.49.1 ([@Lash-L] - [#153396]) ([roborock docs]) (dependency)\r\n- Pushover: Handle empty data section properly ([@linuxkidd] - [#153397]) ([pushover docs])\r\n- Increase onedrive upload chunk size ([@zweckj] - [#153406]) ([onedrive docs])\r\n- Bump pyportainer 1.0.2 ([@erwindouna] - [#153326]) ([portainer docs]) (dependency)\r\n- Bump pyportainer 1.0.3 ([@erwindouna] - [#153413]) ([portainer docs]) (dependency)\r\n- Disable thinking for unsupported gemini models ([@Shulyaka] - [#153415]) ([google_generative_ai_conversation docs])\r\n- Fix Satel Integra creating new binary sensors on YAML import ([@Tommatheussen] - [#153419]) ([satel_integra docs])\r\n- Update `markdown` field description in ntfy integration ([@tr4nt0r] - [#153421]) ([ntfy docs])\r\n- Fix Z-Wave RGB light turn on causing rare `ZeroDivisionError` ([@TheJulianJES] - [#153422]) ([zwave_js docs])\r\n- Bump aiohomekit to 3.2.19 ([@bdraco] - [#153423]) ([homekit_controller docs]) (dependency)\r\n- Fix sentence-casing in user-facing strings of `slack` ([@NoRi2909] - [#153427]) ([slack docs])\r\n- Add missing translation for media browser default title ([@timmo001] - [#153430]) ([media_source docs])\r\n- Fix missing powerconsumptionreport in Smartthings ([@joostlek] - [#153438]) ([smartthings docs])\r\n- Update Home Assistant base image to 2025.10.0 ([@agners] - [#153441]) (dependency)\r\n- Disable baudrate bootloader reset for ZBT-2 ([@puddly] - [#153443]) ([homeassistant_connect_zbt2 docs])\r\n- Add translation for turbo fan mode in SmartThings ([@joostlek] - [#153445]) ([smartthings docs])\r\n- Fix next event in workday calendar ([@gjohansson-ST] - [#153465]) ([workday docs])\r\n- Update OVOEnergy to 3.0.1 ([@timmo001] - [#153476]) ([ovo_energy docs]) (dependency)\r\n- Fix missing parameter pass in onedrive ([@zweckj] - [#153478]) ([onedrive docs])\r\n- Bump pyTibber to 0.32.2 ([@Danielhiversen] - [#153484]) ([tibber docs]) (dependency)\r\n- Bump reolink-aio to 0.16.1 ([@starkillerOG] - [#153489]) ([reolink docs]) (dependency)\r\n- Fix VeSync zero fan speed handling ([@cdnninja] - [#153493]) ([vesync docs])\r\n- Bump universal-silabs-flasher to 0.0.35 ([@puddly] - [#153500]) ([homeassistant_hardware docs]) (dependency)\r\n- Debounce updates in Idasen Desk ([@abmantis] - [#153503]) ([idasen_desk docs])\r\n- Z-Wave to support migrating from USB to socket with same home ID ([@balloob] - [#153522]) ([zwave_js docs])\r\n- When discovering a Z-Wave adapter, always configure add-on in config flow ([@balloob] - [#153575]) ([zwave_js docs])\r\n\r\n[#152881]: https://github.com/home-assistant/core/pull/152881\r\n[#153065]: https://github.com/home-assistant/core/pull/153065\r\n[#153317]: https://github.com/home-assistant/core/pull/153317\r\n[#153326]: https://github.com/home-assistant/core/pull/153326\r\n[#153344]: https://github.com/home-assistant/core/pull/153344\r\n[#153345]: https://github.com/home-assistant/core/pull/153345\r\n[#153350]: https://github.com/home-assistant/core/pull/153350\r\n[#153352]: https://github.com/home-assistant/core/pull/153352\r\n[#153357]: https://github.com/home-assistant/core/pull/153357\r\n[#153361]: https://github.com/home-assistant/core/pull/153361\r\n[#153380]: https://github.com/home-assistant/core/pull/153380\r\n[#153387]: https://github.com/home-assistant/core/pull/153387\r\n[#153396]: https://github.com/home-assistant/core/pull/153396\r\n[#153397]: https://github.com/home-assistant/core/pull/153397\r\n[#153406]: https://github.com/home-assistant/core/pull/153406\r\n[#153413]: https://github.com/home-assistant/core/pull/153413\r\n[#153415]: https://github.com/home-assistant/core/pull/153415\r\n[#153419]: https://github.com/home-assistant/core/pull/153419\r\n[#153421]: https://github.com/home-assistant/core/pull/153421\r\n[#153422]: https://github.com/home-assistant/core/pull/153422\r\n[#153423]: https://github.com/home-assistant/core/pull/153423\r\n[#153427]: https://github.com/home-assistant/core/pull/153427\r\n[#153430]: https://github.com/home-assistant/core/pull/153430\r\n[#153438]: https://github.com/home-assistant/core/pull/153438\r\n[#153441]: https://github.com/home-assistant/core/pull/153441\r\n[#153443]: https://github.com/home-assistant/core/pull/153443\r\n[#153445]: https://github.com/home-assistant/core/pull/153445\r\n[#153465]: https://github.com/home-assistant/core/pull/153465\r\n[#153476]: https://github.com/home-assistant/core/pull/153476\r\n[#153478]: https://github.com/home-assistant/core/pull/153478\r\n[#153484]: https://github.com/home-assistant/core/pull/153484\r\n[#153489]: https://github.com/home-assistant/core/pull/153489\r\n[#153493]: https://github.com/home-assistant/core/pull/153493\r\n[#153500]: https://github.com/home-assistant/core/pull/153500\r\n[#153503]: https://github.com/home-assistant/core/pull/153503\r\n[#153522]: https://github.com/home-assistant/core/pull/153522\r\n[#153575]: https://github.com/home-assistant/core/pull/153575\r\n[@CoMPaTech]: https://github.com/CoMPaTech\r\n[@Danielhiversen]: https://github.com/Danielhiversen\r\n[@Lash-L]: https://github.com/Lash-L\r\n[@NoRi2909]: https://github.com/NoRi2909\r\n[@Shulyaka]: https://github.com/Shulyaka\r\n[@TheJulianJES]: https://github.com/TheJulianJES\r\n[@Tommatheussen]: https://github.com/Tommatheussen\r\n[@abmantis]: https://github.com/abmantis\r\n[@agners]: https://github.com/agners\r\n[@alengwenus]: https://github.com/alengwenus\r\n[@balloob]: https://github.com/balloob\r\n[@bdraco]: https://github.com/bdraco\r\n[@cdnninja]: https://github.com/cdnninja\r\n[@elupus]: https://github.com/elupus\r\n[@erwindouna]: https://github.com/erwindouna\r\n[@frenck]: https://github.com/frenck\r\n[@gjohansson-ST]: https://github.com/gjohansson-ST\r\n[@joostlek]: https://github.com/joostlek\r\n[@linuxkidd]: https://github.com/linuxkidd\r\n[@mib1185]: https://github.com/mib1185\r\n[@puddly]: https://github.com/puddly\r\n[@starkillerOG]: https://github.com/starkillerOG\r\n[@timmo001]: https://github.com/timmo001\r\n[@tr4nt0r]: https://github.com/tr4nt0r\r\n[@zweckj]: https://github.com/zweckj\r\n[airos docs]: https://www.home-assistant.io/integrations/airos/\r\n[airtouch4 docs]: https://www.home-assistant.io/integrations/airtouch4/\r\n[google_generative_ai_conversation docs]: https://www.home-assistant.io/integrations/google_generative_ai_conversation/\r\n[hassio docs]: https://www.home-assistant.io/integrations/hassio/\r\n[homeassistant_connect_zbt2 docs]: https://www.home-assistant.io/integrations/homeassistant_connect_zbt2/\r\n[homeassistant_hardware docs]: https://www.home-assistant.io/integrations/homeassistant_hardware/\r\n[homekit_controller docs]: https://www.home-assistant.io/integrations/homekit_controller/\r\n[idasen_desk docs]: https://www.home-assistant.io/integrations/idasen_desk/\r\n[media_source docs]: https://www.home-assistant.io/integrations/media_source/\r\n[modbus docs]: https://www.home-assistant.io/integrations/modbus/\r\n[nordpool docs]: https://www.home-assistant.io/integrations/nordpool/\r\n[ntfy docs]: https://www.home-assistant.io/integrations/ntfy/\r\n[onedrive docs]: https://www.home-assistant.io/integrations/onedrive/\r\n[ovo_energy docs]: https://www.home-assistant.io/integrations/ovo_energy/\r\n[portainer docs]: https://www.home-assistant.io/integrations/portainer/\r\n[proxmoxve docs]: https://www.home-assistant.io/integrations/proxmoxve/\r\n[pushover docs]: https://www.home-assistant.io/integrations/pushover/\r\n[reolink docs]: https://www.home-assistant.io/integrations/reolink/\r\n[roborock docs]: https://www.home-assistant.io/integrations/roborock/\r\n[satel_integra docs]: https://www.home-assistant.io/integrations/satel_integra/\r\n[slack docs]: https://www.home-assistant.io/integrations/slack/\r\n[smartthings docs]: https://www.home-assistant.io/integrations/smartthings/\r\n[tibber docs]: https://www.home-assistant.io/integrations/tibber/\r\n[togrill docs]: https://www.home-assistant.io/integrations/togrill/\r\n[vesync docs]: https://www.home-assistant.io/integrations/vesync/\r\n[workday docs]: https://www.home-assistant.io/integrations/workday/\r\n[zha docs]: https://www.home-assistant.io/integrations/zha/\r\n[zwave_js docs]: https://www.home-assistant.io/integrations/zwave_js/",
+        "analyzed_at": "2025-11-06 00:36:19"
+      }
+    }
+  ]
+}

@@ -1,41 +1,16 @@
 import ast
-import re
 import json
 import time
-import toml
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, asdict
 import openai
-from pathlib import Path
-import requests
-import base64
-from utils import is_test_file
 from tqdm import tqdm
 
-# --- Configuration Loading ---
-def load_config():
-    """Load configuration file"""
-    config_file = Path(__file__).parent / "config.toml"
-    with open(config_file, 'r', encoding='utf-8') as f:
-        return toml.load(f)
-
-CONFIG = load_config()
-
-# --- Configuration Area ---
-GITHUB_TOKEN = CONFIG['common']['github_token']
-OPENAI_API_KEY = CONFIG['common']['openai_api_key']
-OPENAI_MODEL = CONFIG['common']['openai_model']
-
-# Cache file
-PR_ANALYSIS_CACHE_FILE = Path(__file__).parent / CONFIG['common']['output_dir'] / CONFIG['pr_analyzer']['pr_analysis_cache_file']
-
-# GitHub API base URL
-GITHUB_API_BASE = CONFIG['common']['github_api_base']
-
-HEADERS = {
-    'Authorization': f'token {GITHUB_TOKEN}',
-    'Accept': 'application/vnd.github.v3+json'
-}
+from utils import is_test_file, get_pr_info, get_pr_files, get_file_content, get_commit_info, extract_pr_number_from_url, FileChange, Commit
+from config import (
+    OPENAI_API_KEY, OPENAI_MODEL, OPENAI_BASE_URL, PR_ANALYSIS_CACHE_FILE,
+    MAX_FILES_IN_SUMMARY, MAX_PATCH_LENGTH, MAX_PATCH_PREVIEW_LENGTH, PROMPTS
+)
 
 # --- Data Class Definitions ---
 
@@ -45,44 +20,12 @@ class TestFile:
     path: str
     content: str
     size: int
-    
+
     def to_dict(self) -> Dict:
         return asdict(self)
-    
+
     @classmethod
     def from_dict(cls, data: Dict) -> 'TestFile':
-        return cls(**data)
-
-@dataclass
-class FileChange:
-    """Represents file change information"""
-    filename: str
-    status: str  # 'added', 'removed', 'modified', 'renamed'
-    additions: int
-    deletions: int
-    changes: int
-    patch: Optional[str] = None  # diff content
-    
-    def to_dict(self) -> Dict:
-        return asdict(self)
-    
-    @classmethod
-    def from_dict(cls, data: Dict) -> 'FileChange':
-        return cls(**data)
-
-@dataclass
-class Commit:
-    """Represents a Git commit"""
-    sha: str
-    message: str
-    date: str
-    author: str
-    
-    def to_dict(self) -> Dict:
-        return asdict(self)
-    
-    @classmethod
-    def from_dict(cls, data: Dict) -> 'Commit':
         return cls(**data)
 
 @dataclass
@@ -206,95 +149,6 @@ def save_pr_analysis_to_cache(analysis: PRAnalysis):
     except Exception as e:
         print(f"⚠️ Failed to save PR analysis cache: {e}")
 
-# --- GitHub API Functions ---
-
-def extract_pr_number_from_url(pr_url: str) -> Optional[str]:
-    """Extract PR number from PR URL"""
-    match = re.search(r'/pull/(\d+)', pr_url)
-    return match.group(1) if match else None
-
-def get_pr_info(repo_name: str, pr_number: str) -> Optional[Dict]:
-    """Get PR basic information"""
-    url = f"{GITHUB_API_BASE}/repos/{repo_name}/pulls/{pr_number}"
-    
-    try:
-        response = requests.get(url, headers=HEADERS)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"⚠️ Failed to get PR#{pr_number} info: {response.status_code}")
-            return None
-    except Exception as e:
-        print(f"⚠️ Exception getting PR#{pr_number} info: {e}")
-        return None
-
-def get_pr_files(repo_name: str, pr_number: str) -> List[FileChange]:
-    """Get PR file change information"""
-    url = f"{GITHUB_API_BASE}/repos/{repo_name}/pulls/{pr_number}/files"
-    
-    try:
-        response = requests.get(url, headers=HEADERS)
-        if response.status_code == 200:
-            files_data = response.json()
-            file_changes = []
-            
-            for file_data in files_data:
-                file_change = FileChange(
-                    filename=file_data.get('filename', ''),
-                    status=file_data.get('status', ''),
-                    additions=file_data.get('additions', 0),
-                    deletions=file_data.get('deletions', 0),
-                    changes=file_data.get('changes', 0),
-                    patch=file_data.get('patch', '')
-                )
-                file_changes.append(file_change)
-            
-            return file_changes
-        else:
-            print(f"⚠️ Failed to get PR#{pr_number} file changes: {response.status_code}")
-            return []
-    except Exception as e:
-        print(f"⚠️ Exception getting PR#{pr_number} file changes: {e}")
-        return []
-
-def get_file_content(repo_name: str, file_path: str, ref: str) -> Optional[str]:
-    """Get file content"""
-    try:
-        url = f"{GITHUB_API_BASE}/repos/{repo_name}/contents/{file_path}"
-        time.sleep(0.3)
-        response = requests.get(url, headers=HEADERS, params={'ref': ref})
-        
-        if response.status_code == 200:
-            content_data = response.json()
-            if content_data.get('encoding') == 'base64':
-                content = base64.b64decode(content_data['content']).decode('utf-8', errors='ignore')
-                return content
-    except Exception as e:
-        print(f"    - Failed to get file content {file_path}: {e}")
-    
-    return None
-
-def get_commit_info(repo_name: str, commit_sha: str) -> Optional[Commit]:
-    """Get detailed information of a single commit"""
-    url = f"{GITHUB_API_BASE}/repos/{repo_name}/commits/{commit_sha}"
-    
-    try:
-        response = requests.get(url, headers=HEADERS)
-        if response.status_code == 200:
-            commit_data = response.json()
-            return Commit(
-                sha=commit_data.get('sha', ''),
-                message=commit_data.get('commit', {}).get('message', ''),
-                date=commit_data.get('commit', {}).get('author', {}).get('date', ''),
-                author=commit_data.get('commit', {}).get('author', {}).get('name', '')
-            )
-        else:
-            print(f"⚠️ Failed to get commit {commit_sha[:8]} info: {response.status_code}")
-            return None
-    except Exception as e:
-        print(f"⚠️ Exception getting commit {commit_sha[:8]} info: {e}")
-        return None
-
 def extract_definitions(content: str) -> List[str]:
     """Extract function and class definitions from Python code content, including nested relationships"""
     if not content:
@@ -362,68 +216,45 @@ def generate_detailed_description_with_llm(
     file_changes: List[FileChange]
 ) -> Optional[str]:
     """Use LLM to generate detailed feature description based on file changes"""
-    
-    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url="")
-    
+
+    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+
     # Filter out test files, only build summary for non-test files
     non_test_file_changes = [fc for fc in file_changes if not is_test_file(fc.filename)]
-    
-    # Read parameters from config
-    max_files = CONFIG['pr_analyzer']['max_files_in_summary']
-    max_patch_length = CONFIG['pr_analyzer']['max_patch_length']
-    max_patch_preview = CONFIG['pr_analyzer']['max_patch_preview_length']
-    
+
     # Build file change summary
     files_summary = []
-    for fc in non_test_file_changes[:max_files]:  # Use config file count limit
+    for fc in non_test_file_changes[:MAX_FILES_IN_SUMMARY]:  # Use config file count limit
         summary = f"- {fc.filename} ({fc.status}): +{fc.additions}/-{fc.deletions}"
-        if fc.patch and len(fc.patch) < max_patch_length:  # Use config patch length limit
-            summary += f"\n  {fc.patch[:max_patch_preview]}..."  # Use config preview length
+        if fc.patch and len(fc.patch) < MAX_PATCH_LENGTH:  # Use config patch length limit
+            summary += f"\n  {fc.patch[:MAX_PATCH_PREVIEW_LENGTH]}..."  # Use config preview length
         files_summary.append(summary)
-    
+
     files_text = "\n".join(files_summary)
-    if len(non_test_file_changes) > max_files:
-        files_text += f"\n... and {len(non_test_file_changes) - max_files} more files"
-    
+    if len(non_test_file_changes) > MAX_FILES_IN_SUMMARY:
+        files_text += f"\n... and {len(non_test_file_changes) - MAX_FILES_IN_SUMMARY} more files"
+
     # If no non-test files, provide prompt info
     if not non_test_file_changes:
         files_text = "No files were modified in this PR."
-    
-    prompt = f"""
-You are creating a user requirement description that will be used to instruct another LLM to implement the exact same functionality. Your task is to analyze the PR information and code changes, then write a comprehensive user request that describes what the user wants to accomplish.
 
-This description will be given to a coding LLM to generate the implementation, so you must ensure all functionality across all modified files is thoroughly described from the user's perspective.
+    # Get prompts from config
+    pr_analysis_system_prompt = PROMPTS.pr_analysis_system
+    pr_analysis_user_prompt_template = PROMPTS.pr_analysis_user
 
-Original Feature Description: {feature_description}
-
-PR Title: {pr_info.get('title', '')}
-PR Description: {pr_info.get('body', '')}
-
-File Changes:
-{files_text}
-
-Your user requirement description must:
-- Start with "I want to" and write as if a user is requesting this functionality from a developer
-- Include ALL information from the original PR Description - do not omit any details, requirements, or context provided there
-- Describe what the user wants to accomplish with complete detail for every file that was modified
-- Include all functional requirements that would be needed to recreate this exact implementation
-- When functions/methods have parameter changes (additions, deletions, modifications), describe what the user needs in terms of input data and configuration options, mentioning specific parameter names naturally within the context of the requirement
-- Focus on the complete user workflow and all capabilities they need
-- Describe the expected behavior and outcomes the user wants to achieve
-- Ensure a coding LLM reading this could implement all the functionality without seeing the original code
-- Write as a natural user request, not technical documentation
-- Avoid phrases like "implement function X" or "modify file Y" - instead describe what the user wants to accomplish
-- Do NOT include any actual code implementations, code snippets, or technical syntax - only describe the desired functionality and behavior from a user perspective
-- Focus on WHAT the user wants to achieve, not HOW it should be implemented technically
-
-Remember: This description will be the only guide for another LLM to recreate this functionality, so include every important detail about what the user wants to achieve, but express it as natural user requirements. You must incorporate all information from the original PR description. Never include code - only describe the desired outcomes and behaviors.
-"""
+    # Format the user prompt with variables
+    prompt = pr_analysis_user_prompt_template.format(
+        feature_description=feature_description,
+        pr_title=pr_info.get('title', ''),
+        pr_body=pr_info.get('body', ''),
+        files_text=files_text
+    )
 
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "You are a requirements analyst who creates comprehensive user requirement descriptions that will be used to instruct coding LLMs to implement functionality. Your descriptions must be detailed enough for another LLM to recreate the exact same implementation without seeing the original code. Always start with 'I want to' and write from the user's perspective about what they need to accomplish."},
+                {"role": "system", "content": pr_analysis_system_prompt},
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
@@ -443,9 +274,9 @@ def generate_feature_detailed_description(
     pr_analyses: List[PRAnalysis]
 ) -> Optional[str]:
     """Generate detailed description for the entire feature based on detailed analyses of multiple PRs"""
-    
-    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url="")
-    
+
+    client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+
     # Build detailed summary of all PRs
     pr_summaries = []
     for pr in pr_analyses:
@@ -458,35 +289,23 @@ PR #{pr.pr_number}: {pr.title}
         pr_summaries.append(summary)
     
     prs_text = "\n".join(pr_summaries)
-    
-    prompt = f"""
-You need to create a comprehensive user-focused description for this complete feature. Analyze all the related pull requests to understand what this feature enables users to do.
 
-Feature Type: {feature_type}
-Original Description: {feature_description}
+    # Get prompts from config
+    feature_analysis_system_prompt = PROMPTS.feature_analysis_system
+    feature_analysis_user_prompt_template = PROMPTS.feature_analysis_user
 
-Associated Pull Requests:
-{prs_text}
-
-Your description must:
-- Start with "I want to" and focus on what users can accomplish
-- Explain the specific capabilities this complete feature provides
-- Show how all related changes work together to benefit users
-- Highlight what new things users can now do that they couldn't before
-- Demonstrate how this improves user workflow and productivity
-- Explain the practical value users receive from this feature
-- Combine insights from all PRs to show the complete picture
-- Focus on user benefits rather than technical implementation
-- Explain why this feature matters to users in real-world usage
-
-Write directly from the user's perspective about what they can accomplish and the complete value they receive from this feature.
-"""
+    # Format the user prompt with variables
+    prompt = feature_analysis_user_prompt_template.format(
+        feature_type=feature_type,
+        feature_description=feature_description,
+        prs_text=prs_text
+    )
 
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "You help users understand software features by writing comprehensive, user-focused descriptions. Always start responses with 'I want to' and explain what users can accomplish and the practical value they receive. Synthesize information from multiple sources to show complete user benefits."},
+                {"role": "system", "content": feature_analysis_system_prompt},
                 {"role": "user", "content": prompt}
             ],
             temperature=0,
@@ -544,12 +363,12 @@ def analyze_pr(repo_name: str, pr_url: str, feature_description: str, use_cache:
     # Get detailed commit info
     base_commit = get_commit_info(repo_name, base_sha)
     head_commit = get_commit_info(repo_name, head_sha)
-    
+
     # If unable to get commit info, create basic Commit objects
     if not base_commit:
-        base_commit = Commit(sha=base_commit.sha, message='', date='', author='')
+        base_commit = Commit(sha=base_sha, message='', date='', author='')
     if not head_commit:
-        head_commit = Commit(sha=head_commit.sha, message='', date='', author='')
+        head_commit = Commit(sha=head_sha, message='', date='', author='')
 
     test_files = []
     non_test_files = []
