@@ -125,6 +125,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-data_collect/config.toml
-docker_agent/config.toml
+tmp.py
+
+data_collect/.secrets.toml
 data_collect/crawl.json
+
+docker_agent/agents/agentless.py
+
+docker_agent/swap

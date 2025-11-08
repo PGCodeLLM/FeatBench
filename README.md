@@ -1,7 +1,11 @@
 # FeatBench
 
-FeatBench is an end-to-end benchmark pipeline that turns real GitHub feature releases into executable evaluation tasks for software agents. It fills the gap between traditional code-completion benchmarks and emerging "vibe coding" workflows where non-experts rely on large language models (LLMs) to describe functionality in natural language and let agents implement it autonomously. FeatBench covers data collection, dataset construction, containerized environment setup, and automated test execution so you can measure how well agents implement feature-level changes.
+Offical implementation of our paper "FeatBench: Evaluating Coding Agents on Feature Implementation for Vibe Coding". [paper](https://arxiv.org/abs/2509.22237)
 
+![paper](assets/paper.png)
+
+## Abstract
+The rapid advancement of Large Language Models (LLMs) has given rise to a novel software development paradigm known as 'vibe coding,' where users interact with coding agents through high-level natural language. However, existing evaluation benchmarks for code generation inadequately assess an agent's vibecoding capabilities. Existing benchmarks are misaligned, as they either require code-level specifications or focus narrowly on issue-solving, neglecting the critical scenario of feature implementation within the vibe coding paradiam. To address this gap, we propose FeatBench, a novel benchmark for vibe coding that focuses on feature implementation. Our benchmark is distinguished by several key features: ❶ Pure Natural Language Prompts. Task inputs consist solely of abstract natural language descriptions, devoid of any code or structural hints. ❷ A Rigorous & Evolving Data Collection Process. FeatBench is built on a multi-level filtering pipeline to ensure quality and a fully automated pipeline to evolve the benchmark, mitigating data contamination. ❸ Comprehensive Test Cases. Each task includes Fail-to-Pass (F2P) and Pass-to-Pass (P2P) tests to verify correctness and prevent regressions. ❹ Diverse Application Domains. The benchmark includes repositories from diverse domains to ensure it reflects real-world scenarios. We evaluate two state-of-the-art agent frameworks with four leading LLMs on FeatBench. Our evaluation reveals that feature implementation within the vibe coding paradigm is a significant challenge, with the highest success rate of only 29.94%. Our analysis also reveals a tendency for "aggressive implementation," a strategy that paradoxically leads to both critical failures and superior software design. We release FeatBench, our automated collection pipeline, and all experimental results to facilitate further community research.
 
 ## Benchmark Highlights
 
@@ -11,145 +15,302 @@ FeatBench is an end-to-end benchmark pipeline that turns real GitHub feature rel
 - **Comprehensive regression checks** – Fail-to-Pass (F2P) and Pass-to-Pass (P2P) pytest selections ensure both new behaviour and legacy functionality are validated.
 - **Diverse domains** – 27 actively maintained repositories spanning AI/ML, DevOps, web platforms, and productivity tools provide broad coverage of real-world tech stacks.
 
-## Repository Layout
+## Metadata
 
-```
-FeatBench/
-├── data/                         # Example processed evaluation outputs
-├── data_collect/                 # GitHub mining and release/PR analysis pipeline
-├── docker_agent/                 # Docker-based execution, patch application, and scoring
-├── requirements.txt              # Python dependencies shared across modules
-└── README.md
+![metadata](assets/metadata.png)
+
+The FeatBench dataset contains the following key attributes for each evaluation instance:
+
+- **repo**: Repository name in the format `owner/name` (e.g., "home-assistant/core")
+- **instance_id**: Unique identifier combining repository name and issue/PR number (e.g., "home-assistant__core-153575")
+- **org**: GitHub organization or user name
+- **number**: Associated issue or pull request number
+- **version**: Version tag of the release containing this feature
+- **base_commit**: Git commit hash of the base version before the feature implementation
+- **created_at**: Timestamp when the feature was released (ISO 8601 format)
+- **patch**: Array of source code modifications
+  - **filename**: Path to the modified file
+  - **status**: Modification status (typically "modified")
+  - **additions**: Number of lines added
+  - **deletions**: Number of lines deleted
+  - **changes**: Total number of changes (additions + deletions)
+  - **patch**: Unified diff format showing the actual code changes
+- **test_patch**: Array of test file modifications with the same structure as `patch`
+  - Contains additions, deletions, and unified diffs for test files
+  - Used to validate both FAIL_TO_PASS and PASS_TO_PASS test cases
+- **problem_statement**: Human-readable description of the feature to implement
+- **test_files**: List of test file paths that validate this feature
+- **processed**: Boolean flag indicating whether the instance has been validated
+- **FAIL_TO_PASS**: Tests that should pass after implementing the feature
+- **PASS_TO_PASS**: Tests that should continue passing (regression checks)
+- **docker_image**: Named like `cached_repo:number`
+
+### Example Instance Structure
+```json
+{
+  "repo": "home-assistant/core",
+  "instance_id": "home-assistant__core-153575",
+  "base_commit": "3f9421ab0801a339e62506c0c123066c53810efb",
+  "patch": [...],
+  "test_patch": [...],
+  "problem_statement": "I want to ensure that when my Z-Wave adapter...",
+  "created_at": "2025-10-03T16:39:14Z",
+  "version": "2025.10.1",
+  "org": "home-assistant",
+  "number": 153575,
+  "test_files": ["tests/components/zwave_js/test_config_flow.py"],
+  "processed": true
+}
 ```
 
 ## Prerequisites
-
-- Python 3.10 or later (3.11 recommended to match the configured containers).
-- Docker Engine 24+ with the NVIDIA runtime enabled if you want GPU acceleration (the default container spec requests GPUs).
-- Recent Git and curl installations for repository cloning inside containers.
+- System python with `uv` (used to install `trae-agent`).
+- Python 3.10 or later (3.13 recommended to match the configured containers).
+- Docker Engine 24+.
+- Recent Git installation for repository cloning inside containers.
 - Access tokens:
   - A GitHub personal access token with `repo` and `read:org` permissions.
-  - An LLM provider key (DeepSeek/OpenAI-compatible) for PR summarisation.
-- Optional but recommended: [uv](https://github.com/astral-sh/uv) for faster, deterministic Python installs inside containers.
+  - An LLM provider key (OpenAI-compatible) for PR summarisation.
 
 ## Installation
-
-1. **Clone the repository and create an environment**
-
-	```bash
-	git clone https://github.com/Kndy666/FeatBench.git
-	cd FeatBench
-	python -m venv .venv
-	source .venv/bin/activate
-	python -m pip install --upgrade pip
-	```
-
-2. **Install Python dependencies**
-
-	```bash
-	pip install -r requirements.txt
-	```
-
-	The requirements file covers both the data collection tools and the Docker agent controller. Inside containers FeatBench will additionally install project-specific dependencies via `uv` or `pip` as directed by the prompts.
-
-## Configure Access Tokens and Defaults
-
-### Data collection (`data_collect/`)
-
-1. Copy the template and fill in your credentials:
-
-	```bash
-	cp data_collect/config.toml.template data_collect/config.toml
-	```
-
-2. Edit the new `config.toml` and replace the placeholder GitHub and OpenAI-compatible keys (consider loading them from environment variables instead of committing secrets).
-
-3. Adjust crawling parameters if needed:
-	- `crawl_mode` controls whether to analyse star-ranked repositories or a curated list in `crawl.json`.
-	- `release_collector` thresholds (stars, release count, etc.) gate which repositories enter the pipeline.
-
-### Docker agent (`docker_agent/`)
-
-1. Copy the template config provided in `docker_agent/config.toml.template` and edit paths, proxy settings, and timeouts to match your environment.
-2. Set `paths.analysis_file` to the dataset JSON generated in the previous stage.
-3. Review `docker.base_image` and the Dockerfile template if you cannot provide an NVIDIA-enabled runtime; you can comment out the GPU-related settings in `docker_setup.CacheManager.common_container_config` when running on CPU-only hosts.
-
-## Running the Pipeline
-
-### 1. Collect release-driven tasks
-
 ```bash
-python -m data_collect.main --crawl-mode specified
+git clone https://github.com/Kndy666/FeatBench.git
+cd FeatBench
+
+conda create -n FeatBench python=3.13 -y
+conda activate FeatBench
+
+pip install -r requirements.txt
+pip install -e .
 ```
 
-This command orchestrates four stages:
+## Instructions
 
-1. Collect candidate repositories (`collect_repositories`).
-2. Analyse releases for new features and improvements (`analyze_releases`).
-3. Enrich promising releases with PR-level diffs and LLM-authored task descriptions (`enhance_with_pr_analysis`).
-4. Persist the combined output to `swebench-live/final_analysis_results.json` (path configurable via `config.toml`).
+FeatBench operates in three main phases: **Data Collection**, **Environment Building**, and **Evaluation**. Each phase has its own configuration and requirements.
 
-Intermediate caches live beside the output directory so re-runs can reuse prior work. Use `--no-cache` to force fresh API calls.
+### Phase 1: Data Collection Pipeline
 
-### 2. Transform releases into evaluation specs
+The data collection system mines real feature releases from GitHub to generate evaluation datasets.
 
-Use `docker_agent/dataset_transformation.py` to generate the agent-facing JSON structure:
+The process includes four stages:
+1. **Repository Collection** (`release_collector.py`): Mines GitHub for repositories based on stars and release count
+2. **Release Analysis** (`release_analyzer.py`): Analyzes release content to identify new features
+3. **PR Enhancement** (`pr_analyzer.py`): Enriches with PR-level diffs and LLM-generated task descriptions
+4. **Output Generation** (`main.py`): Orchestrates all stages to produce `final_analysis_results.json`
 
-```bash
-python docker_agent/dataset_transformation.py \
-  --input swebench-live/final_analysis_results.json \
-  --output docker_agent/analysis_results.json
-```
+#### 1. Configure Sensitive Information
 
-The resulting file groups patches by repository, separates test changes (`test_patch`) from source patches (`patch`), records metadata such as `instance_id`, and becomes the input for the Docker runner.
-
-### 3. Prepare Docker configs and cached environments
-
-The first invocation of the Docker agent performs two stages per repository:
-
-1. **File discovery** – run trae-agent locally to catalogue setup files and infer the recommended Python version. Outputs land in `docker_agent/swap/<repo>/`.
-2. **Environment setup** – create a container, install dependencies using the recommended tooling (`uv` preferred, `pip` fallback), and save the configured container as a cached image for faster retries.
-
-You can trigger the bootstrap process with:
+First, create a `.secrets.toml` file in the `docker_agent` and configure the following:
 
 ```bash
-python docker_agent/run.py
+# data_collect/.secrets.toml
+[common]
+github_token = "ghp_xxx"  # GitHub Personal Access Token with 'repo' and 'read:org' permissions
+openai_api_key = "xxx"  # OpenAI-compatible API key
 ```
 
-Use `--test-only` to skip recomputing environments and focus on already-processed specs.
+#### 2. Modify Data Collection Configuration
 
-### 4. Evaluate agents and patch-based baselines
+Modify the settings in `data_collect/config.toml` as needed.
 
-After environments are prepared, run the evaluator to measure each agent:
+#### 3. Run Data Collection
 
 ```bash
-python docker_agent/evaluate.py --agent-names trae-agent agentless --max-instances 20
+cd FeatBench
+python -m data_collect.main
+```
+The script supports several optional command-line arguments to customize the execution:
+- `--no-cache`: Do not use cached data; reprocess all repositories and analyses from scratch.
+- `--collect-only`: Perform only the repository collection stage and skip subsequent release analysis and PR enhancement.
+- `--analyze-only`: Perform only the release analysis stage, assuming repository collection has already been done.
+- `--enhance-only`: Perform only the PR enhancement stage, assuming previous stages are complete.
+
+### Phase 2: Environment Building Pipeline
+
+Build Docker container environments to prepare evaluation infrastructure.
+
+#### 1. Temporary File Directory
+
+The program stores temporary files in the `docker_agent/swap/` subdirectory under the running directory:
+- Contains `trae-agent` clones and configuration files
+- Creates independent container images for each repository
+- **Note**: First run may require several GB of space, depending on the number of repositories processed
+
+#### 2. Trae-Agent Configuration
+
+On the first run, the program will clone trae-agent in the `docker_agent/swap/trae-agent/` directory and exit.
+
+You need to configure in the `trae-agent` directory:
+
+```bash
+cd docker_agent/swap/trae-agent
+cp trae_config.yaml.example trae_config.yaml
+# Edit trae_config.yaml as needed
 ```
 
-Key behaviours:
+#### 3. Modify Settings (if needed)
 
-- Containers are provisioned via `DockerEnvironmentManager`; active container IDs are tracked so Ctrl+C triggers a clean shutdown.
-- Each spec applies the historical test patch, then runs targeted pytest selections derived from `FAIL_TO_PASS` and `PASS_TO_PASS` lists.
-- Agent runs, logs, and test results are appended to `docker_agent/data/processed_evaluation_results_*.json` files for further analysis.
+Modify configurations in `docker_agent/settings.toml` as needed:
 
-## Output Artefacts
+- **Logging configuration** (`level`, `log_file`): Adjust log level and output location
+- **Execution configuration** (`max_specs_per_repo`): Limit maximum specifications per repository
+- **Docker configuration** (`docker_timeout`): Container operation timeout (default: 180 seconds)
+- **Proxy configuration** (`proxy_enabled`, `proxy_http`, `proxy_https`): If operating in a proxy environment
 
-- `data/processed_evaluation_results_*.json` – curated evaluation summaries for different agent/model combinations.
-- `docker_agent/logs/test_logs.json` – pytest logs before/after applying generated patches.
-- `docker_agent/swap/` – transient working tree used for cloning repositories, storing prompts, and caching recommended Python versions. This directory can be purged to reclaim disk space.
+#### 4. Run Environment Building
 
-## Development Tips
+```bash
+cd FeatBench
+python -m docker_agent.runner.main --agents your_agent
+```
 
-- The command executors inject terminal dimensions and proxy settings from `docker_agent/command_executor.py`. Adjust `docker_environment` if your infrastructure requires different proxies.
-- All long-running docker operations respect the `docker.timeout` setting in `docker_agent/config.toml`.
-- To run without GPUs, edit `CacheManager.common_container_config` to remove the `device_requests` section and switch the runtime to `runc`.
-- Enable verbose logging by setting `logging.level = "DEBUG"` in the respective `config.toml` file.
+### Phase 3: Evaluation Execution
 
-## Troubleshooting
+Run agents in isolated Docker containers to implement features.
 
-- **API rate limits** – the data collection stage makes extensive GitHub API calls; prefer tokens with elevated rate limits and consider adjusting the sleep intervals in `pr_analyzer.py` if you still hit secondary limits.
-- **Trae-agent failures** – ensure the `trae-agent` repository can be cloned from within containers.
-- **Patch application conflicts** – the `PatchAnalyzer` records which files fail to apply; inspect `docker_agent/logs/evaluation.log` for mismatches and rerun with `--test-only` once resolved.
-- **Timeouts** – pytest commands default to `--timeout=5` and may need relaxation for larger projects. Modify the prompt template in `docker_agent/config.toml` if longer tests are acceptable.
+#### 1. Dataset Transformation
+First, transform the data from the collection phase:
 
-> **Note:** This is a temporary release and the code may contain various bugs. We will provide a more stable version as soon as possible to facilitate future community use.
+```bash
+cd FeatBench
+python -m docker_agent.tools.main
+```
+
+#### 2. Trae-Agent Evaluation (Default)
+
+The codebase defaults to supporting trae-agent evaluation. 
+
+Then run the evaluator:
+
+```bash
+python -m docker_agent.runner.main --evaluate --agents your_agent
+```
+
+#### 2. Custom Agent Evaluation (if needed)
+
+To evaluate other agents or models, follow these three steps:
+
+**Step 1**: Create a new file in the `docker_agent/agents/` directory, inheriting from the `BaseAgent` class in `base.py`
+
+```python
+# docker_agent/agents/your_agent.py
+from docker_agent.agents.base import BaseAgent
+
+class YourAgent(BaseAgent):
+    def _prepare_agent_code(self):
+        # Prepare agent code
+        pass
+
+    def prepare_resources(self, patch: str) -> Optional[List[Dict[str, Any]]]:
+        # Prepare agent-specific resources before evaluation
+        pass
+	def evaluate(self, spec: Spec, operator, *args, **kwargs) -> Dict[str, Any]:
+		# Evaluate agent on a specific spec
+		pass
+```
+
+Refer to `docker_agent/agents/trae_agent.py` for detailed implementation.
+
+**Step 2**: Modify the `_create_agent` method in `docker_agent/agents/manager.py`
+
+```python
+def _create_agent(self, agent_name: str, config: dict) -> BaseAgent:
+    if agent_name == "trae_agent":
+        return TraeAgent(config)
+    elif agent_name == "your_agent":
+        return YourAgent(config)
+    else:
+        ...
+```
+
+**Step 3**: Update the `docker_agent/agents.toml` configuration file
+
+```toml
+# docker_agent/agents.toml
+[your_agent]
+name = "Your Agent"
+model = "gpt-4"
+provider = "openai"
+install_commands = [
+    "pip install your-agent-package"
+]
+repo_url = "https://github.com/your/agent"
+branch = "main"
+```
+
+### Output Files
+
+The evaluation process generates the following key files:
+
+- `final_analysis_results*.json`: Curated evaluation summaries
+- `evaluation_results_file.json`: Agents Evaluation results
+- `docker_agent/swap/`: Temporary working directory (can be safely deleted)
+
+### Output Format
+
+Each evaluation instance produces a result object with the following structure:
+
+```json
+{
+  "agent": "trae-agent",
+  "model": "deepseek-chat",
+  "instance_id": "instructlab__instructlab-3286",
+  "success_f2p": false,
+  "success_p2p": false,
+  "success": false,
+  "passed_f2p_tests": [],
+  "passed_p2p_tests": [],
+  "total_tokens": 542776,
+  "patch_application": {
+    "total_files_num": 1,
+    "applied_files_num": 1,
+    "applied_files": [
+      "dspy/primitives/tool.py"
+    ],
+    "patch_content": "diff --git a/dspy/primitives/tool.py ..."
+  }
+}
+```
+
+- **agent**: Name of the evaluated agent (e.g., "trae-agent", "your_agent")
+- **model**: Underlying LLM model used by the agent
+- **instance_id**: Unique identifier matching the input instance
+- **success_f2p**: Whether all FAIL_TO_PASS tests pass
+- **success_p2p**: Whether all PASS_TO_PASS tests pass
+- **success**: Overall success (true if both F2P and P2P succeed)
+- **passed_f2p_tests**: List of FAIL_TO_PASS tests that passed
+- **passed_p2p_tests**: List of PASS_TO_PASS tests that passed
+- **total_tokens**: Total tokens consumed during the evaluation
+- **patch_application**: Details about the generated patch
+  - **total_files_num**: Total number of files in the patch
+  - **applied_files_num**: Number of files successfully applied
+  - **applied_files**: List of files that were successfully applied
+  - **patch_content**: Unified diff of the generated changes
+
+## Leaderboard
+
+![paper](assets/board.png)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Citation
+
+If you use FeatBench in your research, please cite our paper:
+
+```bibtex
+@misc{chen2025featbenchevaluatingcodingagents,
+      title={FeatBench: Evaluating Coding Agents on Feature Implementation for Vibe Coding}, 
+      author={Haorui Chen and Chengze Li and Jia Li},
+      year={2025},
+      eprint={2509.22237},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2509.22237}, 
+}
+```
+
+## Support
+
+If you have any questions or suggestions, please email us at `hrchen@std.uestc.edu.cn` or feel free to make issues~

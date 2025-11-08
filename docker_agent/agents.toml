@@ -1,0 +1,18 @@
+# Agent Configurations
+# This file contains configurations for different agents
+
+[[agents]]
+name = "trae-agent"
+model = "deepseek-chat"
+provider = "deepseek"
+repo_url = "https://github.com/bytedance/trae-agent.git"
+branch = "main"
+install_command = "uv sync --all-extras"
+
+[[agents]]
+name = "agentless"
+model = "deepseek-chat"
+provider = "deepseek"
+repo_url = "agentless"
+branch = "main"
+install_command = "uv venv -p 3.11 && uv pip install -r requirements.txt"
