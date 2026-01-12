@@ -35,7 +35,7 @@ LOG_FILE = current_dir / config.log_file
 
 # Path configuration
 ANALYSIS_FILE = current_dir / config.analysis_file
-AGENTLESS_FILE = current_dir / config.agentless_file if config.agentless_file else None
+# AGENTLESS_FILE = current_dir / config.agentless_file if config.agentless_file else None
 
 # Execution configuration
 MAX_SPECS_PER_REPO = config.max_specs_per_repo
