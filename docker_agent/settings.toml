@@ -29,8 +29,8 @@ docker_timeout = 180
 # Dockerfile template
 [DOCKERFILE]
 template = """
-{proxy_and_user_args}
 FROM python:{python_version}-bullseye
+{proxy_and_user_args}
 
 RUN groupadd -g $HOST_GID -o appgroup && \\
     useradd -m -u $HOST_UID -g $HOST_GID -o -s /bin/bash appuser
