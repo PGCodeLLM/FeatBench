@@ -69,6 +69,9 @@ class DockerImageBuilder:
                     log_line = chunk['stream'].strip()
                     if log_line:
                         self.logger.info(log_line)
+                if 'error' in chunk:
+                    error_msg = chunk['error']
+                    raise ContainerCreationError(error_msg)
             
             self.logger.info(f"Image build successful: {image_name}")
             return image_name
