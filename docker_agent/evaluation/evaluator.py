@@ -46,6 +46,7 @@ class AgentEvaluator(BaseRunner):
             for spec_dict in repo_specs[:MAX_SPECS_PER_REPO]:
                 spec = self._dict_to_spec(spec_dict)
                 
+                container = None
                 try:
                     container = self.docker_manager.create_container(spec)
                     operator = ContainerOperator(spec.repo, container)
