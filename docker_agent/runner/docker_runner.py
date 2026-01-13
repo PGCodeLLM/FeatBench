@@ -82,6 +82,7 @@ class DockerAgentRunner(BaseRunner):
                         continue
                 spec = self._dict_to_spec(spec_dict)
 
+                container = None
                 try:
                     if not self.test_only:
                         file_manager.prepare_setup_files(spec)
