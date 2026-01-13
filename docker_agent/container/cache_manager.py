@@ -33,12 +33,12 @@ class CacheManager:
             "command": "/bin/bash",
             "detach": True,
             "tty": True,
-            "runtime": "nvidia",
+            # "runtime": "nvidia",
             "network_mode": "host",
-            "device_requests": [{
-                'count': -1,
-                'capabilities': [['gpu']]
-            }],
+            # "device_requests": [{
+            #     'count': -1,
+            #     'capabilities': [['gpu']]
+            # }],
             "environment": DOCKER_ENVIRONMENT,
             "volumes": {
                 str(self.base_path / "swap"): {
