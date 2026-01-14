@@ -48,11 +48,12 @@ class CacheManager:
             }
         }
 
-        if os.name == 'posix':
-            uid = os.getuid()
-            gid = os.getgid()
-            self.logger.info(f"Running on POSIX system, setting container user to UID={uid}, GID={gid}")
-            config['user'] = f"{uid}:{gid}"
+        # Disabling this for now, as it may cause disk permission issues in some environments
+        # if os.name == 'posix':
+        #     uid = os.getuid()
+        #     gid = os.getgid()
+        #     self.logger.info(f"Running on POSIX system, setting container user to UID={uid}, GID={gid}")
+        #     config['user'] = f"{uid}:{gid}"
 
         return config
 
