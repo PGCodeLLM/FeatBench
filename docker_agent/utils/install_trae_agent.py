@@ -19,7 +19,7 @@ class TraeAgentInstaller:
     def install(
         self,
         install_path: Path,
-        repo_url: str = "https://github.com/bytedance/trae-agent.git",
+        repo_url: str = "https://github.com/PGCodeLLM/trae-agent.git",
         branch: str = "main"
     ) -> bool:
         """

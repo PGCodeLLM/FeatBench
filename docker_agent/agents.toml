@@ -3,9 +3,9 @@
 
 [[agents]]
 name = "trae-agent"
-model = "deepseek-chat"
-provider = "deepseek"
-repo_url = "https://github.com/bytedance/trae-agent.git"
+model = "/home/original_models/Qwen3-Coder-30B-A3B-Instruct"
+provider = "bmc"
+repo_url = "https://github.com/PGCodeLLM/trae-agent.git"
 branch = "main"
 install_command = "uv sync --all-extras"
 

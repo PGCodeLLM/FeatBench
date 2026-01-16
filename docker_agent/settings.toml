@@ -71,7 +71,7 @@ RUN chown -R $HOST_UID:$HOST_GID /workdir && \\
 
 USER $HOST_UID
 
-RUN git clone https://github.com/bytedance/trae-agent.git /workdir/trae-agent;
+RUN git clone https://github.com/PGCodeLLM/trae-agent.git /workdir/trae-agent;
 
 RUN \\
     mkdir -p /home/appuser/.pip && \\

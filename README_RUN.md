@@ -72,7 +72,7 @@ Also specify the model in `docker_agent/agents.toml`:
 name = "trae-agent"
 model = "qwen3_coder_30b"
 provider = "openrouter"
-repo_url = "https://github.com/bytedance/trae-agent.git"
+repo_url = "https://github.com/PGCodeLLM/trae-agent.git"
 branch = "main"
 install_command = "uv sync --all-extras"
 ```
