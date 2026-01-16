@@ -160,6 +160,16 @@ class ContainerOperator:
         self.logger.info(f"Test directories detected recursively: {found}")
         return found
 
+    def _install_xdist(self, repo_name) -> None:
+        """Install pytest-xdist in container"""
+        self.logger.info("Installing pytest-xdist in container")
+        cmd = "pip install pytest-xdist"
+        exit_code, output = self.docker_executor.execute(cmd, f"/workdir/swap/{repo_name}", tty=False, timeout=300)
+        if exit_code != 0:
+            self.logger.error(f"Failed to install pytest-xdist: {output}")
+            raise ContainerOperationError(f"Failed to install pytest-xdist: {output}", container_id=self.container.id if self.container else None)
+        self.logger.info("Successfully installed pytest-xdist in container")
+
     def run_tests_in_container(
         self,
         repo_name: str,
@@ -191,6 +201,7 @@ class ContainerOperator:
 
         base_cmd_template = "python3 -m pytest -q -rA --tb=no -p no:pretty --timeout=5 --continue-on-collection-errors"
         if use_xdist:
+            self._install_xdist(repo_name)
             base_cmd_template = f"{base_cmd_template} --timeout-method=thread -n auto"
         else:
             base_cmd_template = f"{base_cmd_template} --timeout-method=signal"
