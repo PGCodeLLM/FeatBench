@@ -50,7 +50,7 @@ class TraeAgent(BaseAgent):
             f"--working-dir /workdir/swap/{repo_name} "
             f"--model {self.agent_config.model} "
             f"--provider {self.agent_config.provider} "
-            f"--config-file /workdir/swap/trae-agent/trae_config.yaml")
+            f"--config-file /workdir/swap/trae-agent/{self.agent_config.config_file}")
 
     def evaluate(self, spec: Spec, operator: ContainerOperator) -> Dict[str, Any]:
         """
