@@ -12,6 +12,7 @@ from pathlib import Path
 import os
 import shutil
 from datetime import datetime
+import uuid
 
 current_dir = Path(__file__).parent.parent
 
@@ -31,6 +32,9 @@ config = Dynaconf(
 # Convenient exports for common configuration items
 # Agent configurations
 AGENTS = config.AGENTS
+
+# Experiment UUID
+EXP_UUID = str(uuid.uuid4())[:10]
 
 # Experiment suffix
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")

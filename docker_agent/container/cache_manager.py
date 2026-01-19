@@ -8,7 +8,7 @@ from typing import Dict, Optional, Any
 
 from docker_agent.core.types import Container
 from docker_agent.container.image_builder import DockerImageBuilder
-from docker_agent.config.config import DOCKER_ENVIRONMENT
+from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID
 from docker_agent.core.exceptions import CacheError
 
 
@@ -29,7 +29,7 @@ class CacheManager:
         """Extract and return common container creation parameters"""
 
         config = {
-            "name": self.repo,
+            "name": f"{self.repo}_{self.repo_id}_{EXP_UUID}",
             "command": "/bin/bash",
             "detach": True,
             "tty": True,
@@ -131,7 +131,7 @@ class CacheManager:
             **self.common_container_config
         )
 
-        self.logger.info(f"Successfully created container from cached image: {self.repo}")
+        self.logger.info(f"Successfully created container from cached image: {container.name}")
         return container
 
     def create_new_container(self) -> Container:
@@ -147,5 +147,5 @@ class CacheManager:
             **self.common_container_config
         )
 
-        self.logger.info(f"Container {self.repo} created successfully")
+        self.logger.info(f"Container {container.name} created successfully")
         return container

@@ -16,9 +16,10 @@ class DockerEnvironmentManager:
         """Create Docker container and configure test environment (with cache support)"""
 
         self.cache_manager = CacheManager(sepc.repo, sepc.number, timeout)
-        cached_container = self.cache_manager.check_cached_container()
-        if cached_container:
-            return cached_container
+        # Disabling cached container as it has no use and will make "agent" directory already exists issues
+        # cached_container = self.cache_manager.check_cached_container()
+        # if cached_container:
+        #     return cached_container
 
         if self.cache_manager.check_cached_image():
             return self.cache_manager.create_container_from_cached_image()
