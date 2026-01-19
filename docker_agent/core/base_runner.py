@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 
-from docker_agent.config.config import LOG_FILE, LOGGING_LEVEL, LOGGING_FORMAT, ANALYSIS_FILE, AGENTS
+from docker_agent.config.config import LOG_FILE, LOGGING_LEVEL, LOGGING_FORMAT, ANALYSIS_FILE
 from docker_agent.container.docker_env_manager import DockerEnvironmentManager
 from docker_agent.orchestration.signal_handler import SignalHandler
 from docker_agent.orchestration.cleanup_manager import CleanupManager
 from docker_agent.core.types import Spec
-from datetime import datetime
 
 
 class BaseRunner:
@@ -36,18 +35,10 @@ class BaseRunner:
         self.signal_handler.register()
 
         self.logger = logging.getLogger(__name__)
-    
-    def _make_log_file_path(self) -> Path:
-        """Generate log file path with timestamp and model name"""
-        log_file_path = Path(LOG_FILE)
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        model_name = AGENTS[0].model.replace('/', '_').replace('\\', '_').replace(':', '_')
-        new_filename = f"{log_file_path.stem}_{timestamp}_{model_name}{log_file_path.suffix}"
-        return log_file_path.parent / new_filename
 
     def _setup_logging(self):
         """Configure logging"""
-        log_file = self._make_log_file_path()
+        log_file = LOG_FILE
         log_dir = log_file.parent
         log_dir.mkdir(parents=True, exist_ok=True)
 

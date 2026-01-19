@@ -11,6 +11,7 @@ from dynaconf import Dynaconf
 from pathlib import Path
 import os
 import shutil
+from datetime import datetime
 
 current_dir = Path(__file__).parent.parent
 
@@ -28,10 +29,20 @@ config = Dynaconf(
 )
 
 # Convenient exports for common configuration items
+# Agent configurations
+AGENTS = config.AGENTS
+
+# Experiment suffix
+timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+model_name = AGENTS[0].model.replace('/', '_').replace('\\', '_').replace(':', '_')
+EXP_SUFFIX = f"{timestamp}_{model_name}"
+
 # Logging configuration
 LOGGING_LEVEL = config.level
 LOGGING_FORMAT = config.format
 LOG_FILE = current_dir / config.log_file
+new_filename = f"{LOG_FILE.stem}_{EXP_SUFFIX}{LOG_FILE.suffix}"
+LOG_FILE = LOG_FILE.parent / new_filename
 
 # Path configuration
 ANALYSIS_FILE = current_dir / config.analysis_file
@@ -59,9 +70,6 @@ DOCKER_TIMEOUT = config.docker_timeout
 
 # Prompt templates
 PROMPTS = config.PROMPTS
-
-# Agent configurations
-AGENTS = config.AGENTS
 
 # Get terminal size and define environment variables
 terminal_size = shutil.get_terminal_size()
