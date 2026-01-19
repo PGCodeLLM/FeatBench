@@ -9,6 +9,8 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Any
 
+from docker_agent.config.config import EXP_SUFFIX
+
 
 class EvaluationResultManager:
     """Manages evaluation results"""
@@ -19,26 +21,19 @@ class EvaluationResultManager:
 
     def save_evaluation_results(self, results: List[Dict[str, Any]], filename: str):
         """
-        Save evaluation results (append mode)
+        Save evaluation results
 
         Args:
             results: List of evaluation results
             filename: Output filename
         """
         results_file = self.base_path / "results" / filename
+        new_filename = f"{results_file.stem}_{EXP_SUFFIX}{results_file.suffix}"
+        results_file = results_file.parent / new_filename
+
         results_file.parent.mkdir(parents=True, exist_ok=True)
 
-        existing_results = []
-        if results_file.exists():
-            with results_file.open("r", encoding="utf-8") as f:
-                try:
-                    existing_results = json.load(f)
-                except Exception:
-                    existing_results = []
-
-        all_results = existing_results + results
-
         with results_file.open("w", encoding="utf-8") as f:
-            json.dump(all_results, f, indent=2, ensure_ascii=False)
+            json.dump(results, f, indent=2, ensure_ascii=False)
 
         self.logger.info(f"Saved {len(results)} new results to {results_file}")
