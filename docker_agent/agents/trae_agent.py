@@ -1,5 +1,6 @@
 """Specific implementation of Trae-Agent"""
 
+from collections import defaultdict
 import shlex
 import re
 from typing import Dict, Any, Optional, List
@@ -114,7 +115,7 @@ class TraeAgent(BaseAgent):
                 success_p2p = all(test in p2p_passed for test in p2p_tests)
                 success = success_f2p and success_p2p
 
-                total_tokens = self.parse_agent_log(agent_output)
+                tokens_count = self.parse_agent_log(agent_output)
 
                 return {
                     "agent": self.agent_config.name,
@@ -127,7 +128,9 @@ class TraeAgent(BaseAgent):
                     "passed_p2p_tests": list(p2p_passed),
                     "expected_f2p_tests": f2p_tests,
                     "expected_p2p_tests": p2p_tests,
-                    "total_tokens": total_tokens,
+                    "total_tokens": tokens_count["Total Tokens"],
+                    "input_tokens": tokens_count["Input Tokens"],
+                    "output_tokens": tokens_count["Output Tokens"],
                 }
             else:
                 return {
@@ -173,16 +176,18 @@ class TraeAgent(BaseAgent):
 
         summary_section = clean_log[execution_summary_start:]
 
+        tokens_count = defaultdict(None)
         # Extract Total Tokens
         for line in summary_section.split('\n'):
             line = line.strip()
-            if line.startswith("│ Total Tokens"):
-                # Extract number
-                match = re.search(r'│ Total Tokens\s*│\s*(\d+)', line)
-                if match:
-                    return int(match.group(1))
+            for token_type in ["Input Tokens", "Output Tokens", "Total Tokens"]:
+                if line.startswith(f"│ {token_type}"):
+                    # Extract number
+                    match = re.search(rf'│ {token_type}\s*│\s*(\d+)', line)
+                    if match:
+                        tokens_count[token_type] = int(match.group(1))
 
-        return None
+        return tokens_count
     
     def prepare_resources(self) -> Optional[List[Dict[str, Any]]]:
         """
