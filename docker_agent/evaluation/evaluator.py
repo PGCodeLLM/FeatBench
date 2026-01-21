@@ -13,6 +13,7 @@ from docker_agent.agents.manager import AgentManager
 from docker_agent.parsing.patch_analyzer import PatchAnalyzer
 from docker_agent.evaluation.results import EvaluationResultManager
 from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_FILE, MAX_SPECS_PER_REPO
+from docker_agent.core.types import Spec
 
 
 class AgentEvaluator(BaseRunner):
@@ -46,25 +47,33 @@ class AgentEvaluator(BaseRunner):
             for spec_dict in repo_specs[:MAX_SPECS_PER_REPO]:
                 spec = self._dict_to_spec(spec_dict)
                 
-                container = None
-                try:
-                    container = self.docker_manager.create_container(spec)
-                    operator = ContainerOperator(spec.repo, container)
-                    agent_managers = [AgentManager(container, agent_config) for agent_config in agents_to_evaluate]
+                results = self._eval_spec(agents_to_evaluate, spec)
 
-                    for agent_manager in agent_managers:
-                        self.logger.info(f"Starting evaluation of {agent_manager.agent_config.name} on {spec.instance_id}")
-
-                        result = agent_manager.evaluate(spec, operator)
-                        all_results.append(result)
-
+                if results:
+                    all_results.extend(results)
                     self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
 
-                except Exception as e:
-                    self.logger.error(f"Error processing {spec.instance_id}: {e}")
-                finally:
-                    if container and not self.cleanup_in_progress:
-                        self.docker_manager.cleanup_container(container, force_remove=True)
-                        self.active_containers.append(container)
-
         self.logger.info("Evaluation completed")
+
+    def _eval_spec(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
+        container = None
+        results = []
+        try:
+            container = self.docker_manager.create_container(spec)
+            operator = ContainerOperator(spec.repo, container)
+            agent_managers = [AgentManager(container, agent_config) for agent_config in agents_to_evaluate]
+
+            for agent_manager in agent_managers:
+                self.logger.info(f"Starting evaluation of {agent_manager.agent_config.name} on {spec.instance_id}")
+
+                result = agent_manager.evaluate(spec, operator)
+                results.append(result)
+        
+            return results
+
+        except Exception as e:
+            self.logger.error(f"Error processing {spec.instance_id}: {e}")
+        finally:
+            if container and not self.cleanup_in_progress:
+                self.docker_manager.cleanup_container(container, force_remove=True)
+                self.active_containers.append(container)
