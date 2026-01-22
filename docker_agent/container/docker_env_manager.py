@@ -15,16 +15,17 @@ class DockerEnvironmentManager:
     def create_container(self, sepc: Spec, timeout=300) -> Container:
         """Create Docker container and configure test environment (with cache support)"""
 
-        self.cache_manager = CacheManager(sepc.repo, sepc.number, timeout)
+        # Create cache_manager as local variable to avoid race conditions in multi-threaded environment
+        cache_manager = CacheManager(sepc.repo, sepc.number, timeout)
         # Disabling cached container as it has no use and will make "agent" directory already exists issues
-        # cached_container = self.cache_manager.check_cached_container()
+        # cached_container = cache_manager.check_cached_container()
         # if cached_container:
         #     return cached_container
 
-        if self.cache_manager.check_cached_image():
-            return self.cache_manager.create_container_from_cached_image()
+        if cache_manager.check_cached_image():
+            return cache_manager.create_container_from_cached_image()
 
-        return self.cache_manager.create_new_container()
+        return cache_manager.create_new_container()
 
     def cleanup_container(self, container: Container, force_remove: bool = False) -> None:
         """Clean up container resources"""

@@ -1,7 +1,10 @@
 """Agent manager, responsible for setting up and running different agents in container"""
 
 import logging
+import time
 import docker.models.containers
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from docker_agent.agents.base import BaseAgent
@@ -33,10 +36,49 @@ class AgentManager:
     def setup_agent(self):
         """Set up agent environment"""
         self.agent.setup()
+    
+    @staticmethod
+    def remove_all_locks():
+        """Remove all existing repository lock files"""
+        swap_path = Path(__file__).parent.parent / "swap"
+        lock_files = swap_path.glob("*.repo.lock")
+        for lock_file in lock_files:
+            try:
+                lock_file.unlink()
+            except Exception as e:
+                logging.getLogger(__name__).warning(f"Failed to remove lock file {lock_file}: {e}")
+
+    @contextmanager
+    def lock_repo(self, repo_name: str):
+        """Create repository lock file before agent run"""
+        swap_path = self.agent.base_path / "swap"
+        repo_lock_path = swap_path / f"{repo_name}.repo.lock"
+        
+        # Atomically acquire lock
+        self.logger.info(f"Waiting for lock on {repo_name}...")
+        while True:
+            try:
+                # Use 'x' mode for exclusive creation - fails if file exists
+                with open(repo_lock_path, 'x') as f:
+                    f.write(str(time.time()))
+                self.logger.info(f"Acquired lock for {repo_name}")
+                break
+            except FileExistsError:
+                # Lock is held by another process
+                time.sleep(1)
+        
+        try:
+            yield
+        finally:
+            # Release the lock
+            if repo_lock_path.exists():
+                repo_lock_path.unlink()
+                self.logger.info(f"Released lock for {repo_name}")
 
     def evaluate(self, spec, operator, *args, **kwargs) -> Dict[str, Any]:
         """Evaluate agent on spec"""
-        return self.agent.evaluate(spec, operator, *args, **kwargs)
+        with self.lock_repo(spec.repo_name):
+            return self.agent.evaluate(spec, operator, *args, **kwargs)
 
     def prepare_resources(self) -> Optional[List[Dict[str, Any]]]:
         """

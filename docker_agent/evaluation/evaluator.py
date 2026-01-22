@@ -4,15 +4,18 @@ Agent Evaluator - Reuses existing modules
 This module provides agent evaluation functionality by reusing existing
 docker_agent modules for better maintainability and consistency.
 """
-
+import logging
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Optional
+import random
 
 from docker_agent.core.base_runner import BaseRunner
 from docker_agent.container.container_operator import ContainerOperator
 from docker_agent.agents.manager import AgentManager
 from docker_agent.parsing.patch_analyzer import PatchAnalyzer
 from docker_agent.evaluation.results import EvaluationResultManager
-from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_FILE, MAX_SPECS_PER_REPO
+from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_FILE, MAX_SPECS_PER_REPO, MAX_EVAL_WORKERS, LOG_FILE
 from docker_agent.core.types import Spec
 
 
@@ -25,6 +28,7 @@ class AgentEvaluator(BaseRunner):
 
         self.result_manager = EvaluationResultManager(self.base_path)
         self.patch_analyzer = PatchAnalyzer()
+        self.shared_data_lock = threading.Lock()
 
     def evaluate(self, agent_names: Optional[List[str]] = None):
         """
@@ -41,25 +45,57 @@ class AgentEvaluator(BaseRunner):
         specs_by_repo = self._load_specs()
         total_evaluations = sum(len(repo_specs[:MAX_SPECS_PER_REPO]) for repo_specs in specs_by_repo.values())
         self.logger.info(f"Total evaluations to run: {total_evaluations}")
+        self.logger.info(f"Using {MAX_EVAL_WORKERS} worker threads")
 
         all_results = []
+        all_specs = []
+        
+        # Collect all specs to evaluate
         for _, repo_specs in specs_by_repo.items():
             for spec_dict in repo_specs[:MAX_SPECS_PER_REPO]:
                 spec = self._dict_to_spec(spec_dict)
-                
-                results = self._eval_spec(agents_to_evaluate, spec)
+                all_specs.append((agents_to_evaluate, spec))
+        # Shuffle specs to increase repo diversity during evaluation
+        random.shuffle(all_specs)
 
-                if results:
-                    all_results.extend(results)
-                    self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
+        # Remove all lock files before starting evaluation
+        AgentManager.remove_all_locks()
+        
+        # Process specs in parallel using ThreadPoolExecutor
+        completed_count = 0
+        with ThreadPoolExecutor(max_workers=MAX_EVAL_WORKERS) as executor:
+            # Submit all tasks
+            future_to_spec = {
+                executor.submit(self._eval_spec, agents, spec): spec 
+                for agents, spec in all_specs
+            }
+            
+            # Process completed tasks
+            for future in as_completed(future_to_spec):
+                spec = future_to_spec[future]
+                try:
+                    results = future.result()
+                    if results:
+                        all_results.extend(results)
+                        self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
+                    
+                    completed_count += 1
+                    self.logger.info(f"Progress: {completed_count}/{total_evaluations} evaluations completed")
+                except Exception as e:
+                    self.logger.error(f"Error in worker thread for {spec.instance_id}: {e}")
 
         self.logger.info("Evaluation completed")
-
+    
     def _eval_spec(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
         container = None
         results = []
         try:
             container = self.docker_manager.create_container(spec)
+            
+            # Track container before any operations (not after cleanup)
+            with self.shared_data_lock:
+                self.active_containers.append(container)
+            
             operator = ContainerOperator(spec.repo, container)
             agent_managers = [AgentManager(container, agent_config) for agent_config in agents_to_evaluate]
 
@@ -74,6 +110,38 @@ class AgentEvaluator(BaseRunner):
         except Exception as e:
             self.logger.error(f"Error processing {spec.instance_id}: {e}")
         finally:
-            if container and not self.cleanup_in_progress:
+            # Check cleanup_in_progress with lock
+            with self.cleanup_lock:
+                should_cleanup = not self.cleanup_in_progress
+            
+            if container and should_cleanup:
                 self.docker_manager.cleanup_container(container, force_remove=True)
-                self.active_containers.append(container)
+
+    # def _eval_spec_wrapper(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
+    #     """Wrapper for _eval_spec that sets up per-thread logging"""
+    #     thread_logger = self._setup_thread_logging(spec.instance_id)
+        
+    #     try:
+    #         return self._eval_spec(agents_to_evaluate, spec, thread_logger)
+    #     except Exception as e:
+    #         thread_logger.error(f"Error in thread for {spec.instance_id}: {e}")
+    #         raise
+    
+    # def _setup_thread_logging(self, instance_id: int) -> logging.Logger:
+    #     """Setup per-thread logging"""
+    #     thread_logger = logging.getLogger(f"evaluator.thread_{instance_id}")
+        
+    #     # Only add handler if not already added
+    #     if not thread_logger.handlers:
+    #         log_file = self.base_path / "logs" / f"evaluator_thread_{instance_id}.log"
+    #         log_file.parent.mkdir(parents=True, exist_ok=True)
+            
+    #         handler = logging.FileHandler(log_file, encoding='utf-8')
+    #         handler.setFormatter(logging.Formatter(
+    #             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    #         ))
+    #         thread_logger.addHandler(handler)
+    #         thread_logger.setLevel(logging.INFO)
+    #         thread_logger.propagate = False  # Don't propagate to root logger
+        
+    #     return thread_logger

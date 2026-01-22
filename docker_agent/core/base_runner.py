@@ -2,6 +2,7 @@
 
 import logging
 import json
+import threading
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
@@ -28,6 +29,7 @@ class BaseRunner:
 
         self.active_containers = []
         self.cleanup_in_progress = False
+        self.cleanup_lock = threading.Lock()
 
         self._setup_logging()
 
@@ -56,13 +58,17 @@ class BaseRunner:
         Handle signal - cleanup containers
         This method can be overridden by subclasses if needed
         """
-        if self.cleanup_in_progress:
-            return
-
-        self.cleanup_in_progress = True
-        cleanup_manager = CleanupManager(self.docker_manager)
-        cleanup_manager.cleanup_all(self.active_containers)
-        self.cleanup_in_progress = False
+        with self.cleanup_lock:
+            if self.cleanup_in_progress:
+                return
+            self.cleanup_in_progress = True
+        
+        try:
+            cleanup_manager = CleanupManager(self.docker_manager)
+            cleanup_manager.cleanup_all(self.active_containers)
+        finally:
+            with self.cleanup_lock:
+                self.cleanup_in_progress = False
 
     def _load_specs(self) -> Dict[str, List[Dict[str, Any]]]:
         """

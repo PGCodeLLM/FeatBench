@@ -59,7 +59,7 @@ Use the following configuration in `docker_agent/swap/trae-agent/trae_config.yam
 ```yaml
 models:
     trae_agent_model:
-        model_provider: bopenrouterc
+        model_provider: openrouter
         model: "qwen3_coder_30b"
 ```
 

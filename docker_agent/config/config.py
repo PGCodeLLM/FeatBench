@@ -34,7 +34,7 @@ config = Dynaconf(
 AGENTS = config.AGENTS
 
 # Experiment UUID
-EXP_UUID = str(uuid.uuid4())[:10]
+EXP_UUID = str(uuid.uuid4())[:8]
 
 # Experiment suffix
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -55,6 +55,7 @@ ANALYSIS_FILE = current_dir / config.analysis_file
 # Execution configuration
 MAX_SPECS_PER_REPO = config.max_specs_per_repo
 DEFAULT_PYTHON_VERSION = config.default_python_version
+MAX_EVAL_WORKERS = config.max_eval_workers
 
 # File names
 SETUP_FILES_NAME = config.setup_files_list

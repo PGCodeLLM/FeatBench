@@ -4,7 +4,7 @@
 [[agents]]
 name = "trae-agent"
 model = "/home/original_models/Qwen3-Coder-30B-A3B-Instruct"
-provider = "bmc"
+provider = "openrouter"
 repo_url = "https://github.com/PGCodeLLM/trae-agent.git"
 branch = "main"
 config_file = "trae_config.yaml"
