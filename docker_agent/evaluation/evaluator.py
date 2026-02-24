@@ -43,18 +43,36 @@ class AgentEvaluator(BaseRunner):
             return
 
         specs_by_repo = self._load_specs()
-        total_evaluations = sum(len(repo_specs[:MAX_SPECS_PER_REPO]) for repo_specs in specs_by_repo.values())
-        self.logger.info(f"Total evaluations to run: {total_evaluations}")
-        self.logger.info(f"Using {MAX_EVAL_WORKERS} worker threads")
 
-        all_results = []
+        # Load cached results so we can resume without re-running completed specs
+        all_results, evaluated_keys = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
+        if evaluated_keys:
+            self.logger.info(f"Resuming evaluation: {len(evaluated_keys)} agent/instance pairs already cached")
+
         all_specs = []
-        
-        # Collect all specs to evaluate
+        skipped_count = 0
+
+        # Collect only unevaluated specs / agent combos
         for _, repo_specs in specs_by_repo.items():
             for spec_dict in repo_specs[:MAX_SPECS_PER_REPO]:
                 spec = self._dict_to_spec(spec_dict)
-                all_specs.append((agents_to_evaluate, spec))
+                # Keep only agents that haven't evaluated this spec yet
+                remaining_agents = [
+                    a for a in agents_to_evaluate
+                    if (a.name, spec.instance_id) not in evaluated_keys
+                ]
+                if remaining_agents:
+                    all_specs.append((remaining_agents, spec))
+                else:
+                    skipped_count += 1
+
+        if skipped_count:
+            self.logger.info(f"Skipping {skipped_count} fully-evaluated specs")
+
+        total_evaluations = len(all_specs)
+        self.logger.info(f"Total evaluations to run: {total_evaluations}")
+        self.logger.info(f"Using {MAX_EVAL_WORKERS} worker threads")
+
         # Shuffle specs to increase repo diversity during evaluation
         random.shuffle(all_specs)
 
