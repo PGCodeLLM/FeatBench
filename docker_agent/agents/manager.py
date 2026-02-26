@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, List
 from docker_agent.agents.base import BaseAgent
 from docker_agent.agents.trae_agent import TraeAgent
 from docker_agent.agents.gemini_cli_agent import GeminiCLIAgent
+from docker_agent.agents.claude_code_agent import ClaudeCodeAgent
 # from docker_agent.agents.agentless import Agentless
 from docker_agent.core.exceptions import ConfigurationError
 
@@ -31,6 +32,8 @@ class AgentManager:
             return TraeAgent(self.container, self.agent_config)
         elif agent_name == "gemini-cli":
             return GeminiCLIAgent(self.container, self.agent_config)
+        elif agent_name == "claude-code":
+            return ClaudeCodeAgent(self.container, self.agent_config)
         elif agent_name == "agentless":
             return Agentless(self.container, self.agent_config)
         else:
