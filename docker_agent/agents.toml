@@ -23,6 +23,12 @@ api_key = ""              # Anthropic API key or LiteLLM proxy key
 base_url = ""             # Optional: LiteLLM proxy base URL (e.g. http://host:4000/v1)
 
 [[agents]]
+name = "openhands"
+model = "openai/qwen3-coder-30b-a3b-instruct"
+api_key = "sk-1234567890"              # LLM_API_KEY: API key for your LLM provider
+base_url = "http://localhost:4000"                # LLM_BASE_URL: Custom LLM base URL (optional)
+
+[[agents]]
 name = "agentless"
 model = "deepseek-chat"
 provider = "deepseek"
