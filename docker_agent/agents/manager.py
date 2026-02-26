@@ -38,7 +38,7 @@ class AgentManager:
         elif agent_name == "openhands":
             return OpenHandsAgent(self.container, self.agent_config)
         elif agent_name == "agentless":
-            return Agentless(self.container, self.agent_config)
+            raise NotImplementedError("Agentless evaluation is not included")
         else:
             raise ConfigurationError(f"Unsupported agent type: {self.agent_config.name}")
 
