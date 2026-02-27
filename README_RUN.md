@@ -28,7 +28,46 @@ python -m docker_agent.runner.main --agents trae-agent
 
 The command will print errors, but it's normal, as long as the repositories are cloned. I had to modify the dataset file and make all the instances as `"processed": false` to force the benchmark to clone the repositories.
 
-### 3. Pulling Docker Images
+### 3. Dataset Loading Configuration
+
+FeatBench supports loading datasets from two sources:
+
+#### Option A: Local JSON File (Default)
+
+Load from a local JSON file:
+
+```toml
+# In docker_agent/settings.toml
+dataset_source = "json"
+analysis_file = "../dataset/featbench_v1_0.json"
+```
+
+#### Option B: Hugging Face Dataset
+
+Load from the Hugging Face dataset repository:
+
+```toml
+# In docker_agent/settings.toml
+dataset_source = "hf"
+hf_dataset_repo = "PGCodeLLM/FeatBench_v1.0"
+hf_dataset_split = "test"
+```
+
+**Requirements**: To use Hugging Face datasets, ensure you have the `datasets` library installed:
+
+```bash
+pip install datasets
+```
+
+**Environment Variables**: You can also configure the dataset source using environment variables:
+
+```bash
+export DOCKER_AGENT_DATASET_SOURCE="hf"
+export DOCKER_AGENT_HF_DATASET_REPO="PGCodeLLM/FeatBench_v1.0"
+export DOCKER_AGENT_HF_DATASET_SPLIT="test"
+```
+
+### 4. Pulling Docker Images
 
 Pull the Docker images for the benchmark:
 
@@ -36,7 +75,7 @@ Pull the Docker images for the benchmark:
 python scripts/pull_images.py --dataset dataset/featbench_v1_0.json
 ```
 
-### 4. Configuring LLM Settings
+### 5. Configuring LLM Settings
 
 Configure your LLM provider settings:
 
@@ -77,7 +116,7 @@ branch = "main"
 install_command = "uv sync --all-extras"
 ```
 
-### 5. Running the Benchmark
+### 6. Running the Benchmark
 
 Run the benchmark evaluation:
 

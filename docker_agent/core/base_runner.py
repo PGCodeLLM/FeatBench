@@ -7,7 +7,15 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 
-from docker_agent.config.config import LOG_FILE, LOGGING_LEVEL, LOGGING_FORMAT, ANALYSIS_FILE
+from docker_agent.config.config import (
+    LOG_FILE, 
+    LOGGING_LEVEL, 
+    LOGGING_FORMAT, 
+    ANALYSIS_FILE,
+    DATASET_SOURCE,
+    HF_DATASET_REPO,
+    HF_DATASET_SPLIT
+)
 from docker_agent.container.docker_env_manager import DockerEnvironmentManager
 from docker_agent.orchestration.signal_handler import SignalHandler
 from docker_agent.orchestration.cleanup_manager import CleanupManager
@@ -77,8 +85,12 @@ class BaseRunner:
         Returns:
             Dictionary mapping repository names to list of specs
         """
-        with ANALYSIS_FILE.open("r", encoding="utf-8") as f:
-            specs = json.load(f)
+        if DATASET_SOURCE == "hf":
+            self.logger.info(f"Loading dataset from Hugging Face: {HF_DATASET_REPO} (split: {HF_DATASET_SPLIT})")
+            specs = self._load_specs_from_hf()
+        else:
+            self.logger.info(f"Loading dataset from JSON file: {ANALYSIS_FILE}")
+            specs = self._load_specs_from_json()
 
         specs_by_repo = defaultdict(list)
         for spec in specs:
@@ -86,6 +98,45 @@ class BaseRunner:
             specs_by_repo[repo].append(spec)
 
         return specs_by_repo
+    
+    def _load_specs_from_json(self) -> List[Dict[str, Any]]:
+        """Load specs from local JSON file"""
+        with ANALYSIS_FILE.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    
+    def _load_specs_from_hf(self) -> List[Dict[str, Any]]:
+        """
+        Load specs from Hugging Face dataset
+        
+        Note: The HF dataset has patch_files/test_patch_files keys,
+        but we need to restore them to patch/test_patch for compatibility.
+        We also drop the standard diff format strings as they're not needed.
+        """
+        try:
+            from datasets import load_dataset
+        except ImportError:
+            raise ImportError(
+                "datasets library is required to load from Hugging Face. "
+                "Install it with: pip install datasets"
+            )
+        
+        dataset = load_dataset(HF_DATASET_REPO, split=HF_DATASET_SPLIT)
+        
+        # Convert to list and restore original key names
+        specs = []
+        for item in dataset:
+            spec = dict(item)
+            
+            # Restore original key names: patch_files -> patch, test_patch_files -> test_patch
+            if "patch_files" in spec:
+                spec["patch"] = spec.pop("patch_files")
+            if "test_patch_files" in spec:
+                spec["test_patch"] = spec.pop("test_patch_files")
+                
+            specs.append(spec)
+        
+        self.logger.info(f"Loaded {len(specs)} specs from Hugging Face dataset")
+        return specs
 
     def _dict_to_spec(self, spec_dict: Dict[str, Any], repo_name: Optional[str] = None) -> Spec:
         """

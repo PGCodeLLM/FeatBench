@@ -50,6 +50,12 @@ LOG_FILE = LOG_FILE.parent / new_filename
 
 # Path configuration
 ANALYSIS_FILE = current_dir / config.analysis_file
+
+# Dataset source configuration
+DATASET_SOURCE = config.get("dataset_source", "json")  # "json" or "hf"
+HF_DATASET_REPO = config.get("hf_dataset_repo", "PGCodeLLM/FeatBench_v1.0")
+HF_DATASET_SPLIT = config.get("hf_dataset_split", "test")
+
 # AGENTLESS_FILE = current_dir / config.agentless_file if config.agentless_file else None
 
 # Execution configuration
