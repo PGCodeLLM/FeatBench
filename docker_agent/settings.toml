@@ -8,7 +8,7 @@ analysis_file = "../dataset/featbench_v1_0.json"
 
 # Dataset source configuration
 # Options: "json" or "hf" (Hugging Face dataset)
-dataset_source = "json"
+dataset_source = "hf"
 
 # Hugging Face dataset configuration (only used when dataset_source = "hf")
 hf_dataset_repo = "PGCodeLLM/FeatBench_v1.0"
@@ -17,7 +17,7 @@ hf_dataset_split = "test"
 # Execution configuration
 max_specs_per_repo = 100
 default_python_version = "3.9"
-max_eval_workers = 8
+max_eval_workers = 16
 
 # File names
 setup_files_list = "setup_files_list.json"
