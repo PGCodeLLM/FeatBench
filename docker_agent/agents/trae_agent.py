@@ -48,7 +48,8 @@ class TraeAgent(BaseAgent):
             f"--working-dir /workdir/swap/{repo_name} "
             f"--model {self.agent_config.model} "
             f"--provider {self.agent_config.provider} "
-            f"--config-file /workdir/swap/trae-agent/{self.agent_config.config_file}")
+            f"--config-file /workdir/swap/trae-agent/{self.agent_config.config_file} "
+            "--trajectory-file /logs/trajectory.json")
 
     @staticmethod
     def clean_ansi_codes(text: str) -> str:

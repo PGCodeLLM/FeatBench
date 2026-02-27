@@ -16,7 +16,7 @@ class DockerEnvironmentManager:
         """Create Docker container and configure test environment (with cache support)"""
 
         # Create cache_manager as local variable to avoid race conditions in multi-threaded environment
-        cache_manager = CacheManager(sepc.repo, sepc.number, timeout)
+        cache_manager = CacheManager(sepc.repo, sepc.number, sepc.instance_id, timeout)
         # Disabling cached container as it has no use and will make "agent" directory already exists issues
         # cached_container = cache_manager.check_cached_container()
         # if cached_container:

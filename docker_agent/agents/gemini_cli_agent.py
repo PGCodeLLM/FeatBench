@@ -51,6 +51,14 @@ class GeminiCLIAgent(BaseAgent):
                 agent_name=self.agent_config.name,
             )
 
+        self.logger.info("Creating ~/.gemini/tmp symlink to /logs...")
+        symlink_cmd = 'bash -c "mkdir -p ~/.gemini && ln -sf /logs ~/.gemini/tmp"'
+        exit_code, output = self.docker_executor.execute(
+            symlink_cmd, "/root", stream=True
+        )
+        if exit_code != 0:
+            self.logger.warning(f"Failed to create gemini tmp symlink: {output}")
+
     # ------------------------------------------------------------------ #
     #  Run                                                                 #
     # ------------------------------------------------------------------ #

@@ -96,7 +96,8 @@ class OpenHandsAgent(BaseAgent):
         return (
             f"{env_prefix}"
             f"$HOME/.local/bin/openhands --headless --json "
-            f"-t {escaped_problem} --override-with-envs"
+            f"-t {escaped_problem} --override-with-envs "
+            f"| tee /logs/output.jsonl"
         )
 
     def _build_env_prefix(self) -> str:

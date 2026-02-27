@@ -8,14 +8,14 @@ from typing import Dict, Optional, Any
 
 from docker_agent.core.types import Container
 from docker_agent.container.image_builder import DockerImageBuilder
-from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID
+from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID, EXP_SUFFIX
 from docker_agent.core.exceptions import CacheError
 
 
 class CacheManager:
     """Container and image cache manager"""
 
-    def __init__(self, repo: str, repo_id: str, timeout=300):
+    def __init__(self, repo: str, repo_id: str, instance_id: str, timeout=300):
         self.base_path = Path(__file__).parent.parent
         self.logger = logging.getLogger(__name__)
         self.client = docker.from_env(timeout=timeout)
@@ -23,6 +23,8 @@ class CacheManager:
         self.repo_id = repo_id
         self.repo_lower = self.repo.lower()
         self.image_builder = DockerImageBuilder(self.base_path, timeout)
+        self.instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / instance_id
+        self.instance_log_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def common_container_config(self) -> Dict[str, Any]:
@@ -43,6 +45,10 @@ class CacheManager:
             "volumes": {
                 str(self.base_path / "swap"): {
                     "bind": "/workdir/swap",
+                    "mode": "rw"
+                },
+                str(self.instance_log_dir): {
+                    "bind": "/logs",
                     "mode": "rw"
                 }
             }

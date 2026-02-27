@@ -1,6 +1,7 @@
 """Agent manager, responsible for setting up and running different agents in container"""
 
 import logging
+import os
 import time
 import docker.models.containers
 from contextlib import contextmanager
@@ -98,6 +99,10 @@ class AgentManager:
                     spec.instance_id,
                     spec.repo_name,
                 )
+
+                # Fix /logs ownership so the host user can access files written by the container
+                uid, gid = os.getuid(), os.getgid()
+                self.agent.docker_executor.execute(f"chown -R {uid}:{gid} /logs", "/")
 
                 if agent_success:
                     f2p_tests: List[str] = []
