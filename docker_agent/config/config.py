@@ -11,6 +11,7 @@ from dynaconf import Dynaconf
 from pathlib import Path
 import os
 import shutil
+import sys
 from datetime import datetime
 import uuid
 
@@ -38,7 +39,20 @@ EXP_UUID = str(uuid.uuid4())[:8]
 
 # Experiment suffix
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-model_name = AGENTS[0].model.replace('/', '_').replace('\\', '_').replace(':', '_')
+# EXP_SUFFIX embeds the model name of the agent being evaluated. Ideally we'd
+# read this from the parsed argparse result, but config.py is executed at
+# import time — before argparse runs in main.py. We therefore inspect sys.argv
+# directly here to find the first value passed to --agents, look it up in
+# AGENTS, and use its model name. If --agents is absent (e.g. runner mode) we
+# fall back to the first agent defined in agents.toml.
+_cli_agent_name = None
+for _i, _arg in enumerate(sys.argv):
+    if _arg == "--agents" and _i + 1 < len(sys.argv):
+        _cli_agent_name = sys.argv[_i + 1]
+        break
+_selected_agent = next((a for a in AGENTS if a.name == _cli_agent_name), None) if _cli_agent_name else None
+_model_for_suffix = (_selected_agent or AGENTS[0]).model
+model_name = _model_for_suffix.replace('/', '_').replace('\\', '_').replace(':', '_')
 EXP_SUFFIX = f"{timestamp}_{model_name}"
 
 # Logging configuration

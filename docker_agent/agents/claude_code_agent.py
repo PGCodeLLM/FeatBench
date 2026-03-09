@@ -15,10 +15,17 @@ class ClaudeCodeAgent(BaseAgent):
     Uses the official claude CLI (https://claude.ai/install.sh) running in
     non-interactive / headless mode via ``--dangerously-skip-permissions -p``.
     Authentication and model selection are forwarded via environment variables:
+
+    API-key mode (default):
         ANTHROPIC_AUTH_TOKEN  – API key / auth token
-        ANTHROPIC_BASE_URL    – optional proxy base URL (trailing /v1 stripped)
-        ANTHROPIC_MODEL       – model name
         ANTHROPIC_API_KEY     – set to empty string so the CLI uses AUTH_TOKEN
+        ANTHROPIC_BASE_URL    – optional proxy base URL (trailing /v1 stripped)
+
+    OAuth mode (api_key starts with ``sk-ant-oat``):
+        CLAUDE_CODE_OAUTH_TOKEN – OAuth token; no ANTHROPIC_* key vars are set
+
+    Common:
+        ANTHROPIC_MODEL       – model name
         IS_SANDBOX            – set to 1 to suppress interactive prompts
     """
 
@@ -124,11 +131,17 @@ class ClaudeCodeAgent(BaseAgent):
         if base_url.endswith("/v1"):
             base_url = base_url[:-3]
 
-        parts.append(f"ANTHROPIC_AUTH_TOKEN={shlex.quote(api_key)}")
-        parts.append(f"ANTHROPIC_API_KEY=''")          # must be empty so AUTH_TOKEN is used
+        # OAuth tokens (sk-ant-oat…) are passed via CLAUDE_CODE_OAUTH_TOKEN;
+        # regular API keys use the AUTH_TOKEN / empty API_KEY pair.
+        is_oauth = api_key.startswith("sk-ant-oat")
+        if is_oauth:
+            parts.append(f"CLAUDE_CODE_OAUTH_TOKEN={shlex.quote(api_key)}")
+        else:
+            parts.append(f"ANTHROPIC_AUTH_TOKEN={shlex.quote(api_key)}")
+            parts.append(f"ANTHROPIC_API_KEY=''")      # must be empty so AUTH_TOKEN is used
         parts.append(f"IS_SANDBOX=1")
 
-        if base_url:
+        if base_url and not is_oauth:
             parts.append(f"ANTHROPIC_BASE_URL={shlex.quote(base_url)}")
         if model:
             parts.append(f"ANTHROPIC_MODEL={shlex.quote(model)}")
