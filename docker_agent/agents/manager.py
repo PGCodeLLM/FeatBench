@@ -100,6 +100,12 @@ class AgentManager:
                     spec.repo_name,
                 )
 
+                # Copy patch.diff into /logs if it exists
+                patch_path = f"/workdir/swap/{spec.repo_name}/patch.diff"
+                self.agent.docker_executor.execute(
+                    f"bash -c 'if [ -f {patch_path} ]; then cp {patch_path} /logs/; fi'", "/"
+                )
+
                 # Fix /logs ownership so the host user can access files written by the container
                 uid, gid = os.getuid(), os.getgid()
                 self.agent.docker_executor.execute(f"chown -R {uid}:{gid} /logs", "/")
