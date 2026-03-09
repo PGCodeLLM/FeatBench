@@ -132,7 +132,13 @@ class BaseRunner:
                 spec["patch"] = spec.pop("patch_files")
             if "test_patch_files" in spec:
                 spec["test_patch"] = spec.pop("test_patch_files")
-                
+
+            # Convert SWEBench-style test lists back to comma-separated strings
+            for key in ("PASS_TO_PASS", "FAIL_TO_PASS"):
+                value = spec.get(key)
+                if isinstance(value, list):
+                    spec[key] = ", ".join(value)
+
             specs.append(spec)
         
         self.logger.info(f"Loaded {len(specs)} specs from Hugging Face dataset")

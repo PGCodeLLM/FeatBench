@@ -1,9 +1,14 @@
 """
-Convert featbench_v1_0.json patch lists into standard unified git diff strings.
+Standardize featbench_v1_0.json into a format compatible with SWEBench tooling.
 
-Each entry's `patch` and `test_patch` arrays (per-file hunk objects) are
-assembled into a single diff string and replace the original top-level keys
-`patch` and `test_patch`.
+Transformations applied to each entry:
+
+1. Patch format  – `patch` and `test_patch` arrays (per-file hunk objects) are
+   assembled into unified git diff strings.  The original per-file objects are
+   preserved under `patch_files` / `test_patch_files`.
+
+2. Test lists    – comma-separated `PASS_TO_PASS` and `FAIL_TO_PASS` strings
+   are split into proper Python lists, matching the SWEBench convention.
 
 Output: dataset/featbench_v1_0_standardized.json
 """
@@ -84,6 +89,17 @@ def patches_to_diff(patch_list: list[dict]) -> str:
     return "".join(file_diffs).rstrip("\n")
 
 
+def convert_test_list(value: str | None) -> list[str]:
+    """Convert a comma-separated test-ID string into a list of test IDs.
+
+    SWEBench stores these fields as lists; FeatBench uses comma-separated
+    strings.  Empty / absent values become an empty list.
+    """
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 def validate_diff(diff_string: str, label: str) -> bool:
     """Validate that a diff string is parsable by unidiff."""
     if not diff_string:
@@ -126,6 +142,10 @@ def main() -> None:
         
         entry["patch"] = patch_diff
         entry["test_patch"] = test_patch_diff
+
+        # Convert comma-separated test lists to proper Python lists
+        entry["PASS_TO_PASS"] = convert_test_list(entry.get("PASS_TO_PASS"))
+        entry["FAIL_TO_PASS"] = convert_test_list(entry.get("FAIL_TO_PASS"))
 
     if failed_entries:
         print(f"\n❌ {len(failed_entries)} entries failed validation:")
