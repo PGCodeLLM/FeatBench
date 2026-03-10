@@ -105,6 +105,12 @@ class AgentManager:
                 self.agent.docker_executor.execute(
                     f"bash -c 'if [ -f {patch_path} ]; then cp {patch_path} /logs/; fi'", "/"
                 )
+                # Save the patch in the results, if it exists
+                if os.path.exists(self.agent.base_path / "swap" / spec.repo_name / "patch.diff"):
+                    with open(self.agent.base_path / "swap" / spec.repo_name / "patch.diff", "r") as f:
+                        patch_content = f.read()
+                else:
+                    patch_content = None
 
                 # Fix /logs ownership so the host user can access files written by the container
                 uid, gid = os.getuid(), os.getgid()
@@ -169,6 +175,7 @@ class AgentManager:
                         "success_f2p": success_f2p,
                         "success_p2p": success_p2p,
                         "success": success,
+                        "patch": patch_content,
                         "passed_f2p_tests": list(f2p_passed),
                         "passed_p2p_tests": list(p2p_passed),
                         "expected_f2p_tests": f2p_tests,
