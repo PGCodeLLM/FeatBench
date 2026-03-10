@@ -77,6 +77,7 @@ class AgentEvaluator(BaseRunner):
         random.shuffle(all_specs)
 
         # Remove all lock files before starting evaluation
+        # We are not using repo locks anymore, but this is just in case there are any leftover lock files from previous runs that might interfere with the evaluation
         AgentManager.remove_all_locks()
         
         # Process specs in parallel using ThreadPoolExecutor

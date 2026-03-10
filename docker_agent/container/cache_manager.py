@@ -1,8 +1,10 @@
 """Container and image cache manager"""
 
 import docker
+import io
 import os
 import logging
+import tarfile
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -20,11 +22,17 @@ class CacheManager:
         self.logger = logging.getLogger(__name__)
         self.client = docker.from_env(timeout=timeout)
         self.repo = repo.replace("/", "_")
+        self.repo_name = repo.split("/")[-1]
         self.repo_id = repo_id
         self.repo_lower = self.repo.lower()
         self.image_builder = DockerImageBuilder(self.base_path, timeout)
         self.instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / instance_id
         self.instance_log_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def swap_volume_name(self) -> str:
+        """Unique named Docker volume for this container's swap directory"""
+        return f"featbench_swap_{self.repo_lower}_{self.repo_id}_{EXP_UUID}"
 
     @property
     def common_container_config(self) -> Dict[str, Any]:
@@ -42,8 +50,11 @@ class CacheManager:
             #     'capabilities': [['gpu']]
             # }],
             "environment": DOCKER_ENVIRONMENT,
+            "labels": {
+                "featbench.swap_volume": self.swap_volume_name
+            },
             "volumes": {
-                str(self.base_path / "swap"): {
+                self.swap_volume_name: {
                     "bind": "/workdir/swap",
                     "mode": "rw"
                 },
@@ -62,6 +73,44 @@ class CacheManager:
         #     config['user'] = f"{uid}:{gid}"
 
         return config
+
+    def create_swap_volume(self) -> None:
+        """Create a unique named Docker volume for this container's swap directory"""
+        self.client.volumes.create(name=self.swap_volume_name)
+        self.logger.info(f"Created named swap volume: {self.swap_volume_name}")
+
+    def copy_swap_to_volume(self, container) -> None:
+        """Copy repo and trae-agent directories from local swap into the container's named swap volume"""
+        swap_path = self.base_path / "swap"
+
+        dirs_to_copy = [
+            (swap_path / self.repo_name, self.repo_name),
+            (swap_path / "trae-agent", "trae-agent"),
+        ]
+
+        self.logger.info(f"Copying swap dirs into volume {self.swap_volume_name}")
+        tar_stream = io.BytesIO()
+        with tarfile.open(fileobj=tar_stream, mode="w|") as tar:
+            for src, arcname in dirs_to_copy:
+                if src.exists():
+                    self.logger.info(f"Including {src} in swap volume copy")
+                    tar.add(str(src), arcname=arcname)
+                else:
+                    self.logger.info(f"Skipping {src} (does not exist)")
+        tar_stream.seek(0)
+        container.put_archive("/workdir/swap", tar_stream)
+        self.logger.info("Swap content copied into named volume successfully")
+
+    def delete_swap_volume(self) -> None:
+        """Delete the named swap volume"""
+        try:
+            vol = self.client.volumes.get(self.swap_volume_name)
+            vol.remove(force=True)
+            self.logger.info(f"Deleted named swap volume: {self.swap_volume_name}")
+        except docker.errors.NotFound:
+            self.logger.warning(f"Swap volume {self.swap_volume_name} not found during cleanup")
+        except Exception as e:
+            self.logger.error(f"Failed to delete swap volume {self.swap_volume_name}: {e}")
 
     def check_cached_container(self) -> Optional[Container]:
         """Check if cached container exists"""
