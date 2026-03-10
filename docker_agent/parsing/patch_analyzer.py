@@ -242,3 +242,20 @@ class PatchAnalyzer:
             "applied_files": applied_files,
             "patch_content": patch_content
         }
+
+    def apply_patch_content_to_container(self, patch_content: str,
+                                         docker_executor, workdir: str,
+                                         include_test: bool = True, include_source: bool = True) -> Dict[str, any]:
+        """Complete process of applying patch content (string) to container"""
+        patches = self.parse_unified_diff(patch_content)
+
+        filtered_patches = self.filter_patches(patches, include_test, include_source)
+
+        applied_files = self.apply_patches_to_container(filtered_patches, docker_executor, workdir)
+
+        return {
+            "total_files_num": len(filtered_patches),
+            "applied_files_num": len(applied_files),
+            "applied_files": applied_files,
+            "patch_content": patch_content
+        }

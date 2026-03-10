@@ -106,11 +106,11 @@ class AgentManager:
             self.agent.docker_executor.execute(
                 f"bash -c 'if [ -f {patch_path} ]; then cp {patch_path} /logs/; fi'", "/"
             )
-            # Save the patch in the results, if it exists
-            if os.path.exists(self.agent.base_path / "swap" / spec.repo_name / "patch.diff"):
-                with open(self.agent.base_path / "swap" / spec.repo_name / "patch.diff", "r") as f:
-                    patch_content = f.read()
-            else:
+            # Read the patch content from the container via cat
+            cat_exit_code, patch_content = self.agent.docker_executor.execute(
+                f"cat {patch_path}", "/", tty=False
+            )
+            if cat_exit_code != 0:
                 patch_content = None
 
             # Fix /logs ownership so the host user can access files written by the container
@@ -127,8 +127,8 @@ class AgentManager:
 
                 # ---- FAIL_TO_PASS ----------------------------------------
                 operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-                self.agent.path_analyzer.apply_patch_file_to_container(
-                    self.agent.base_path / "swap" / spec.repo_name / "patch.diff",
+                self.agent.path_analyzer.apply_patch_content_to_container(
+                    patch_content,
                     self.agent.docker_executor,
                     "/workdir/swap/" + spec.repo_name,
                     include_test=False,
@@ -144,8 +144,8 @@ class AgentManager:
 
                 # ---- PASS_TO_PASS ----------------------------------------
                 operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-                self.agent.path_analyzer.apply_patch_file_to_container(
-                    self.agent.base_path / "swap" / spec.repo_name / "patch.diff",
+                self.agent.path_analyzer.apply_patch_content_to_container(
+                    patch_content,
                     self.agent.docker_executor,
                     "/workdir/swap/" + spec.repo_name,
                     include_test=False,
