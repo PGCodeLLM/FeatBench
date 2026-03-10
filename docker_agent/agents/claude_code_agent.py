@@ -1,7 +1,10 @@
 """Specific implementation of Claude Code Agent"""
 
+import io
 import shlex
 import re
+import tarfile
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from docker_agent.agents.base import BaseAgent
@@ -34,19 +37,23 @@ class ClaudeCodeAgent(BaseAgent):
     # ------------------------------------------------------------------ #
 
     def _prepare_agent_code(self):
-        """Install Claude Code via the official installation script."""
-        self.logger.info("Installing Claude Code via official install script...")
+        """Install Claude Code – either from a pinned local binary or the official install script.
 
-        install_cmd = 'bash -c "curl -fsSL https://claude.ai/install.sh | bash"'
-        exit_code, output = self.docker_executor.execute(
-            install_cmd, "/workdir", stream=True, timeout=300
-        )
+        Which path is taken is controlled by the ``use_local_binary`` field in the
+        agent configuration (default: ``False``):
 
-        if exit_code != 0:
-            raise AgentSetupError(
-                f"Failed to install Claude Code: {output}",
-                agent_name=self.agent_config.name,
-            )
+        * ``use_local_binary = true``  – copy the ``claude`` binary that lives in
+          the project root into ``~/.local/bin/`` inside the container and make it
+          executable.  Raises :class:`AgentSetupError` if the binary is missing.
+        * ``use_local_binary = false`` (default) – download and install the latest
+          release via ``https://claude.ai/install.sh``.
+        """
+        use_local_binary = getattr(self.agent_config, "use_local_binary", False)
+
+        if use_local_binary:
+            self._install_local_binary()
+        else:
+            self._install_from_script()
 
         self.logger.info("Updating /root/.bashrc with PATH...")
         bashrc_append = '\nexport PATH="$HOME/.local/bin:$PATH"\n'
@@ -69,6 +76,80 @@ class ClaudeCodeAgent(BaseAgent):
             self.logger.warning(f"Failed to create claude projects symlink: {output}")
 
         self.logger.info("Claude Code installed successfully")
+
+    # ------------------------------------------------------------------ #
+    #  Installation helpers                                                #
+    # ------------------------------------------------------------------ #
+
+    def _install_from_script(self):
+        """Download and install the latest Claude Code via the official install script."""
+        self.logger.info("Installing Claude Code via official install script...")
+
+        install_cmd = 'bash -c "curl -fsSL https://claude.ai/install.sh | bash"'
+        exit_code, output = self.docker_executor.execute(
+            install_cmd, "/workdir", stream=True, timeout=300
+        )
+
+        if exit_code != 0:
+            raise AgentSetupError(
+                f"Failed to install Claude Code: {output}",
+                agent_name=self.agent_config.name,
+            )
+
+    def _install_local_binary(self):
+        """Copy the pinned ``claude`` binary from the project root into the container.
+
+        The binary must exist at ``<project_root>/claude``.  It is copied to
+        ``/root/.local/bin/claude`` inside the container and made executable.
+        """
+        # Project root is one level above the docker_agent package directory.
+        binary_path = self.base_path.parent / "claude"
+
+        if not binary_path.exists():
+            raise AgentSetupError(
+                f"Local claude binary not found at '{binary_path}'. "
+                "Either place the binary there or set use_local_binary = false "
+                "to download the latest release instead."
+                "Download the binary from a URL similar to 'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/2.1.72/linux-x64/claude' (exact URL may vary based on version and platform).",
+                agent_name=self.agent_config.name,
+            )
+
+        self.logger.info(f"Copying local claude binary from '{binary_path}' into container...")
+
+        # Ensure destination directory exists inside the container.
+        mkdir_exit, mkdir_out = self.docker_executor.execute(
+            "mkdir -p /root/.local/bin", "/root", stream=False
+        )
+        if mkdir_exit != 0:
+            raise AgentSetupError(
+                f"Failed to create /root/.local/bin in container: {mkdir_out}",
+                agent_name=self.agent_config.name,
+            )
+
+        # Pack the binary into an in-memory tar archive and stream it into the container.
+        tar_buffer = io.BytesIO()
+        with tarfile.open(fileobj=tar_buffer, mode="w") as tar:
+            tar.add(str(binary_path), arcname="claude")
+        tar_data = tar_buffer.getvalue()
+
+        success = self.container.put_archive("/root/.local/bin", tar_data)
+        if not success:
+            raise AgentSetupError(
+                "Failed to copy claude binary into container (put_archive returned False).",
+                agent_name=self.agent_config.name,
+            )
+
+        # Make the binary executable.
+        chmod_exit, chmod_out = self.docker_executor.execute(
+            "chmod +x /root/.local/bin/claude", "/root", stream=False
+        )
+        if chmod_exit != 0:
+            raise AgentSetupError(
+                f"Failed to chmod +x /root/.local/bin/claude: {chmod_out}",
+                agent_name=self.agent_config.name,
+            )
+
+        self.logger.info("Local claude binary installed successfully.")
 
     # ------------------------------------------------------------------ #
     #  Run                                                                 #
@@ -140,6 +221,7 @@ class ClaudeCodeAgent(BaseAgent):
             parts.append(f"ANTHROPIC_AUTH_TOKEN={shlex.quote(api_key)}")
             parts.append(f"ANTHROPIC_API_KEY=''")      # must be empty so AUTH_TOKEN is used
         parts.append(f"IS_SANDBOX=1")
+        parts.append(f"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1")  # Equivalent of setting DISABLE_AUTOUPDATER, DISABLE_BUG_COMMAND, DISABLE_ERROR_REPORTING, and DISABLE_TELEMETRY
 
         if base_url and not is_oauth:
             parts.append(f"ANTHROPIC_BASE_URL={shlex.quote(base_url)}")

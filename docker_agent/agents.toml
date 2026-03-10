@@ -21,6 +21,7 @@ name = "claude-code"
 model = "claude-sonnet-4-5"
 api_key = ""              # Anthropic API key or LiteLLM proxy key
 base_url = ""             # Optional: LiteLLM proxy base URL (e.g. http://host:4000/v1)
+use_local_binary = true                            # true: copy <project_root>/claude binary; false: download latest via install.sh
 
 [[agents]]
 name = "openhands"
