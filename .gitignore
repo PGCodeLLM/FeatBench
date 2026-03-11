@@ -134,4 +134,6 @@ docker_agent/agents/agentless.py
 
 docker_agent/swap
 
+docker_agent/evaluation_results*
+
 claude
