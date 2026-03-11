@@ -38,7 +38,13 @@ AGENTS = config.AGENTS
 EXP_UUID = str(uuid.uuid4())[:8]
 
 # Experiment suffix
-timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+# Allow resuming an experiment by supplying -t/--resume-timestamp on the CLI.
+_resume_timestamp = None
+for _i, _arg in enumerate(sys.argv):
+    if _arg in ("-t", "--resume-timestamp") and _i + 1 < len(sys.argv):
+        _resume_timestamp = sys.argv[_i + 1]
+        break
+timestamp = _resume_timestamp if _resume_timestamp else datetime.now().strftime("%Y%m%d-%H%M%S")
 # EXP_SUFFIX embeds the model name of the agent being evaluated. Ideally we'd
 # read this from the parsed argparse result, but config.py is executed at
 # import time — before argparse runs in main.py. We therefore inspect sys.argv

@@ -11,6 +11,7 @@ def main():
     parser.add_argument("--test-only", action="store_true", help="Only run tests, skip environment configuration and image saving")
     parser.add_argument("--evaluate", action="store_true", help="Run evaluation mode")
     parser.add_argument("--agents", nargs="+", help="List of agent names to evaluate (Now only Trae-agent is supported)")
+    parser.add_argument("-t", "--resume-timestamp", help="Timestamp to resume an existing experiment (format: YYYYMMDD-HHMMSS). Overrides the auto-generated timestamp.")
 
     args = parser.parse_args()
 
