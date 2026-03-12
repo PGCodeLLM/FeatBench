@@ -217,7 +217,7 @@ class DockerCommandExecutor(BaseCommandExecutor):
         self.container = container
         self.client = docker.from_env()
 
-    def execute(self, command: str, workdir: str = "/workdir", stream: bool = False, tty: bool = True, timeout: Optional[float] = None) -> Tuple[int, str]:
+    def execute(self, command: str, workdir: str = "/workdir", stream: bool = False, tty: bool = True, timeout: Optional[float] = 3600) -> Tuple[int, str]:
         """Execute command in Docker container"""
         try:
             if tty:
