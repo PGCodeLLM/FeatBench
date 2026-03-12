@@ -30,6 +30,10 @@ api_key = "sk-1234567890"              # LLM_API_KEY: API key for your LLM provi
 base_url = "http://localhost:4000"                # LLM_BASE_URL: Custom LLM base URL (optional)
 
 [[agents]]
+name = "oracle"
+model = "oracle"
+
+[[agents]]
 name = "agentless"
 model = "deepseek-chat"
 provider = "deepseek"
