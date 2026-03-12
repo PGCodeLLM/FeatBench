@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import shlex
 from typing import Tuple, Optional
 import docker
 from abc import ABC, abstractmethod
@@ -231,7 +232,7 @@ class DockerCommandExecutor(BaseCommandExecutor):
     def _exec(self, command: str, workdir: str, stream: bool, tty: bool, timeout: Optional[float]) -> Tuple[int, str]:
         """Common execution logic"""
         if timeout is not None:
-            timeout_command = f"timeout -s TERM -k 10s {int(timeout)}s {command}"
+            timeout_command = f"timeout -s TERM -k 10s {int(timeout)}s bash -c {shlex.quote(command)}"
         else:
             timeout_command = command
             
