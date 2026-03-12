@@ -1,6 +1,7 @@
 """Container operator class"""
 
 import logging
+import os
 from pathlib import Path
 from typing import List, Dict, Optional, Set
 
@@ -160,6 +161,23 @@ class ContainerOperator:
         self.logger.info(f"Test directories detected recursively: {found}")
         return found
 
+    def _compute_xdist_workers(self) -> int:
+        """Compute an appropriate number of pytest-xdist workers based on current system load.
+
+        Uses the 1-minute load average as an estimate of currently busy CPUs,
+        then allocates 80% of the remaining cores, leaving some headroom for
+        other processes. When all eval workers are running tests concurrently
+        the load average will be high and fewer workers are returned; when only
+        one worker is active more cores are available and a larger number is
+        returned.
+        """
+        total_cpus = os.cpu_count() or 1
+        current_load = os.getloadavg()[0]  # 1-minute load average (≈ CPUs currently busy)
+        available_cpus = max(1, total_cpus - int(current_load))
+        workers = max(1, int(available_cpus * 0.8))  # leave 20% headroom
+        self.logger.info(f"CPU count: {total_cpus}, load avg: {current_load:.1f}, xdist workers: {workers}")
+        return workers
+
     def _install_xdist(self, repo_name) -> None:
         """Install pytest-xdist in container"""
         self.logger.info("Installing pytest-xdist in container")
@@ -202,7 +220,8 @@ class ContainerOperator:
         base_cmd_template = "python3 -m pytest -q -rA --tb=no -p no:pretty --timeout=5 --continue-on-collection-errors"
         if use_xdist:
             self._install_xdist(repo_name)
-            base_cmd_template = f"{base_cmd_template} --timeout-method=thread -n auto"
+            xdist_workers = self._compute_xdist_workers()
+            base_cmd_template = f"{base_cmd_template} --timeout-method=thread -n {xdist_workers}"
         else:
             base_cmd_template = f"{base_cmd_template} --timeout-method=signal"
 
