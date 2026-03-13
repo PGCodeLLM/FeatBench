@@ -145,7 +145,7 @@ class AgentManager:
                 f2p_passed: set = set()
                 if f2p_tests:
                     f2p_passed, _ = operator.run_tests_in_container(
-                        spec.repo_name, f2p_tests, [TestStatus.PASSED], False
+                        spec.repo_name, f2p_tests, [TestStatus.PASSED], False, log_file="f2p_pytest.log"
                     )
 
                 # ---- PASS_TO_PASS ----------------------------------------
@@ -162,7 +162,7 @@ class AgentManager:
                 p2p_passed: set = set()
                 if p2p_tests:
                     p2p_passed, _ = operator.run_tests_in_container(
-                        spec.repo_name, p2p_tests, [TestStatus.PASSED]
+                        spec.repo_name, p2p_tests, [TestStatus.PASSED], log_file="p2p_pytest.log"
                     )
 
                 success_f2p = all(test in f2p_passed for test in f2p_tests)

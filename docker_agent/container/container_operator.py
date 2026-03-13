@@ -193,7 +193,8 @@ class ContainerOperator:
         repo_name: str,
         test_files: Optional[List[Dict[str, CodeChange] | str]] = None,
         expected_statuses: Optional[List[TestStatus]] = None,
-        use_xdist: bool = True
+        use_xdist: bool = True,
+        log_file: Optional[str] = None,
     ) -> tuple[Set[str], str]:
         """Run tests in container and return passed test files and logs"""
         pytest_args = []
@@ -225,14 +226,19 @@ class ContainerOperator:
         else:
             base_cmd_template = f"{base_cmd_template} --timeout-method=signal"
 
+        if log_file:
+            self.docker_executor.execute(f"bash -c '> /logs/{log_file}'", "/")
+
         # Estimate full command length (conservative estimate bash limit 100KB)
         estimated_length = len(base_cmd_template) + sum(len(arg) + 1 for arg in pytest_args)
 
         if estimated_length > 100000:  # If exceeds 100KB, use batch execution directly
             self.logger.info(f"Too many test parameters ({len(pytest_args)}), using batch execution")
-            return self._run_tests_in_batches(repo_name, pytest_args, base_cmd_template, expected_statuses)
+            return self._run_tests_in_batches(repo_name, pytest_args, base_cmd_template, expected_statuses, log_file)
 
         cmd = f"{base_cmd_template} {' '.join(pytest_args)}"
+        if log_file:
+            cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
 
         exit_code, output = self.docker_executor.execute(
             cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=1200
@@ -240,7 +246,7 @@ class ContainerOperator:
         matched_files = self.parse_pytest_output(output, pytest_args, expected_statuses)
         return matched_files, output
 
-    def _run_tests_in_batches(self, repo_name: str, pytest_args: List[str], base_cmd_template: str, expected_statuses: Optional[List[TestStatus]] = None) -> tuple[Set[str], str]:
+    def _run_tests_in_batches(self, repo_name: str, pytest_args: List[str], base_cmd_template: str, expected_statuses: Optional[List[TestStatus]] = None, log_file: Optional[str] = None) -> tuple[Set[str], str]:
         """When command is too long, execute tests in batches"""
         self.logger.info("Executing tests in batches to avoid command length limit")
 
@@ -253,6 +259,8 @@ class ContainerOperator:
             self.logger.info(f"Executing batch {i//batch_size + 1} of tests ({len(batch)})")
 
             cmd = f"{base_cmd_template} {' '.join(batch)}"
+            if log_file:
+                cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
             exit_code, output = self.docker_executor.execute(
                 cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=1200
             )
