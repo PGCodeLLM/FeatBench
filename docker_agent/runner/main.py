@@ -12,12 +12,13 @@ def main():
     parser.add_argument("--evaluate", action="store_true", help="Run evaluation mode")
     parser.add_argument("--agents", nargs="+", help="List of agent names to evaluate (Now only Trae-agent is supported)")
     parser.add_argument("-t", "--resume-timestamp", help="Timestamp to resume an existing experiment (format: YYYYMMDD-HHMMSS). Overrides the auto-generated timestamp.")
+    parser.add_argument("--instance-ids", nargs="+", help="List of instance IDs to evaluate. If not provided, evaluates all instances.")
 
     args = parser.parse_args()
 
     if args.evaluate:
         evaluator = AgentEvaluator()
-        evaluator.evaluate(agent_names=args.agents)
+        evaluator.evaluate(agent_names=args.agents, instance_ids=args.instance_ids)
     else:
         runner = DockerAgentRunner(test_only=args.test_only)
         runner.run()

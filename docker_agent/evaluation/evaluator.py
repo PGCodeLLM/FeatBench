@@ -30,12 +30,13 @@ class AgentEvaluator(BaseRunner):
         self.patch_analyzer = PatchAnalyzer()
         self.shared_data_lock = threading.Lock()
 
-    def evaluate(self, agent_names: Optional[List[str]] = None):
+    def evaluate(self, agent_names: Optional[List[str]] = None, instance_ids: Optional[List[str]] = None):
         """
         Main evaluation method
 
         Args:
             agent_names: List of agent names to evaluate
+            instance_ids: List of instance IDs to evaluate. If None, evaluates all instances.
         """
         agents_to_evaluate = [a for a in AGENTS if agent_names is None or a.name in agent_names]
         if not agents_to_evaluate:
@@ -43,6 +44,10 @@ class AgentEvaluator(BaseRunner):
             return
 
         specs_by_repo = self._load_specs()
+
+        if instance_ids is not None:
+            instance_id_set = set(instance_ids)
+            self.logger.info(f"Filtering to {len(instance_id_set)} specified instance IDs")
 
         # Load cached results so we can resume without re-running completed specs
         all_results, evaluated_keys = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
@@ -56,6 +61,8 @@ class AgentEvaluator(BaseRunner):
         for _, repo_specs in specs_by_repo.items():
             for spec_dict in repo_specs[:MAX_SPECS_PER_REPO]:
                 spec = self._dict_to_spec(spec_dict)
+                if instance_ids is not None and spec.instance_id not in instance_id_set:
+                    continue
                 # Keep only agents that haven't evaluated this spec yet
                 remaining_agents = [
                     a for a in agents_to_evaluate
