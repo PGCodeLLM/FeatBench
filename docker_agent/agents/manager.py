@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from docker_agent.agents.base import BaseAgent
+from docker_agent.parsing.patch_analyzer import PatchAnalyzer
+from docker_agent.utils.command_executor import DockerCommandExecutor
 from docker_agent.agents.trae_agent import TraeAgent
 from docker_agent.agents.gemini_cli_agent import GeminiCLIAgent
 from docker_agent.agents.claude_code_agent import ClaudeCodeAgent
@@ -88,10 +90,71 @@ class AgentManager:
                 repo_lock_path.unlink()
                 self.logger.info(f"Released lock for {repo_name}")
 
-    def evaluate(self, spec, operator, *args, **kwargs) -> Dict[str, Any]:
-        """Evaluate agent on spec"""
+    def _run_tests(self, spec, operator, patch_content) -> Dict[str, Any]:
+        """Run F2P and P2P tests with a given patch. Shared by evaluate() and reevaluate()."""
         from docker_agent.parsing.pytest_parser import TestStatus
 
+        f2p_tests: List[str] = []
+        p2p_tests: List[str] = []
+        if spec.FAIL_TO_PASS:
+            f2p_tests.extend(spec.FAIL_TO_PASS.split(", "))
+        if spec.PASS_TO_PASS:
+            p2p_tests.extend(spec.PASS_TO_PASS.split(", "))
+
+        patch_analyzer = PatchAnalyzer()
+        docker_executor = DockerCommandExecutor(self.container)
+
+        # ---- FAIL_TO_PASS ----------------------------------------
+        operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
+        patch_analyzer.apply_patch_content_to_container(
+            patch_content,
+            docker_executor,
+            "/workdir/swap/" + spec.repo_name,
+            include_test=False,
+        )
+        if spec.test_patch:
+            operator.apply_patches(spec.test_patch)
+
+        f2p_passed: set = set()
+        if f2p_tests:
+            f2p_passed, _ = operator.run_tests_in_container(
+                spec.repo_name, f2p_tests, [TestStatus.PASSED], False, log_file="f2p_pytest.log"
+            )
+
+        # ---- PASS_TO_PASS ----------------------------------------
+        operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
+        patch_analyzer.apply_patch_content_to_container(
+            patch_content,
+            docker_executor,
+            "/workdir/swap/" + spec.repo_name,
+            include_test=False,
+        )
+        if spec.test_patch:
+            operator.apply_patches(spec.test_patch)
+
+        p2p_passed: set = set()
+        if p2p_tests:
+            p2p_passed, _ = operator.run_tests_in_container(
+                spec.repo_name, p2p_tests, [TestStatus.PASSED], log_file="p2p_pytest.log"
+            )
+
+        success_f2p = all(test in f2p_passed for test in f2p_tests)
+        success_p2p = all(test in p2p_passed for test in p2p_tests)
+        success = success_f2p and success_p2p
+
+        return {
+            "success_f2p": success_f2p,
+            "success_p2p": success_p2p,
+            "success": success,
+            "patch": patch_content,
+            "passed_f2p_tests": list(f2p_passed),
+            "passed_p2p_tests": list(p2p_passed),
+            "expected_f2p_tests": f2p_tests,
+            "expected_p2p_tests": p2p_tests,
+        }
+
+    def evaluate(self, spec, operator, *args, **kwargs) -> Dict[str, Any]:
+        """Evaluate agent on spec"""
         # We are not locking repos anymore, since we copy the repo into a unique named volume for each container
         # with self.lock_repo(spec.repo_name):
         try:
@@ -124,50 +187,7 @@ class AgentManager:
             self.agent.docker_executor.execute(f"chown -R {uid}:{gid} /logs", "/")
 
             if agent_success:
-                f2p_tests: List[str] = []
-                p2p_tests: List[str] = []
-                if spec.FAIL_TO_PASS:
-                    f2p_tests.extend(spec.FAIL_TO_PASS.split(", "))
-                if spec.PASS_TO_PASS:
-                    p2p_tests.extend(spec.PASS_TO_PASS.split(", "))
-
-                # ---- FAIL_TO_PASS ----------------------------------------
-                operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-                self.agent.path_analyzer.apply_patch_content_to_container(
-                    patch_content,
-                    self.agent.docker_executor,
-                    "/workdir/swap/" + spec.repo_name,
-                    include_test=False,
-                )
-                if spec.test_patch:
-                    operator.apply_patches(spec.test_patch)
-
-                f2p_passed: set = set()
-                if f2p_tests:
-                    f2p_passed, _ = operator.run_tests_in_container(
-                        spec.repo_name, f2p_tests, [TestStatus.PASSED], False, log_file="f2p_pytest.log"
-                    )
-
-                # ---- PASS_TO_PASS ----------------------------------------
-                operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-                self.agent.path_analyzer.apply_patch_content_to_container(
-                    patch_content,
-                    self.agent.docker_executor,
-                    "/workdir/swap/" + spec.repo_name,
-                    include_test=False,
-                )
-                if spec.test_patch:
-                    operator.apply_patches(spec.test_patch)
-
-                p2p_passed: set = set()
-                if p2p_tests:
-                    p2p_passed, _ = operator.run_tests_in_container(
-                        spec.repo_name, p2p_tests, [TestStatus.PASSED], log_file="p2p_pytest.log"
-                    )
-
-                success_f2p = all(test in f2p_passed for test in f2p_tests)
-                success_p2p = all(test in p2p_passed for test in p2p_tests)
-                success = success_f2p and success_p2p
+                test_result = self._run_tests(spec, operator, patch_content)
 
                 try:
                     tokens_count = self.agent.parse_agent_log(agent_output)
@@ -179,14 +199,7 @@ class AgentManager:
                     "agent": self.agent.agent_config.name,
                     "model": self.agent.agent_config.model,
                     "instance_id": spec.instance_id,
-                    "success_f2p": success_f2p,
-                    "success_p2p": success_p2p,
-                    "success": success,
-                    "patch": patch_content,
-                    "passed_f2p_tests": list(f2p_passed),
-                    "passed_p2p_tests": list(p2p_passed),
-                    "expected_f2p_tests": f2p_tests,
-                    "expected_p2p_tests": p2p_tests,
+                    **test_result,
                     "total_tokens": tokens_count["Total Tokens"],
                     "input_tokens": tokens_count["Input Tokens"],
                     "output_tokens": tokens_count["Output Tokens"],
@@ -208,6 +221,35 @@ class AgentManager:
                 "instance_id": spec.instance_id,
                 "success": False,
                 "error": str(e),
+            }
+
+    def reevaluate(self, spec, operator, patch_content: str, agent_name: str, model_name: str) -> Dict[str, Any]:
+        """Re-evaluate a cached patch against the spec's tests, bypassing the agent run."""
+        from datetime import datetime, timezone
+
+        reeval_ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+        try:
+            operator.checkout_commit(spec.base_commit, use_docker=True)
+            test_result = self._run_tests(spec, operator, patch_content)
+
+            return {
+                "agent": agent_name,
+                "model": model_name,
+                "instance_id": spec.instance_id,
+                **test_result,
+                "reevaluated_at": reeval_ts,
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error re-evaluating {agent_name} on {spec.instance_id}: {e}")
+            return {
+                "agent": agent_name,
+                "model": model_name,
+                "instance_id": spec.instance_id,
+                "success": False,
+                "error": str(e),
+                "reevaluated_at": reeval_ts,
             }
 
     def prepare_resources(self) -> Optional[List[Dict[str, Any]]]:
