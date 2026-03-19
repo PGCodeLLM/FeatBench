@@ -376,7 +376,7 @@ class ContainerOperator:
             cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
 
         exit_code, output = self.docker_executor.execute(
-            cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=1200
+            cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=3600
         )
         matched_files = self.parse_pytest_output(output, expected_tests, expected_statuses)
         return matched_files, output
@@ -397,7 +397,7 @@ class ContainerOperator:
             if log_file:
                 cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
             exit_code, output = self.docker_executor.execute(
-                cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=1200
+                cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=3600
             )
 
             all_output.append(output)
