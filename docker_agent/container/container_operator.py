@@ -312,13 +312,14 @@ class ContainerOperator:
         expected_statuses: Optional[List[TestStatus]] = None,
         use_xdist: bool = True,
         log_file: Optional[str] = None,
+        instance_id: Optional[str] = None,
     ) -> tuple[Set[str], str]:
         """Run tests in container and return passed test files and logs"""
         if repo_name == "conan":
             self._setup_conan_cmake_env(repo_name)
         if repo_name == "tox":
             self._setup_tox_env(repo_name)
-        if repo_name.lower() == "pybamm":
+        if repo_name.lower() == "pybamm" and instance_id != "pybamm-team__PyBaMM-4394":
             self._setup_pybamm_env(repo_name)
         if repo_name == "jupyter-ai":
             self._setup_jupyter_ai_env(repo_name)
@@ -354,6 +355,8 @@ class ContainerOperator:
                 expected_tests = test_files
 
         base_cmd_template = "python3 -m pytest -q -rA --tb=no -p no:pretty --timeout=60 --continue-on-collection-errors"
+        if instance_id == "tox-dev__tox-3534":
+            base_cmd_template += " --run-integration"
         if use_xdist:
             self._install_xdist(repo_name)
             xdist_workers = self._compute_xdist_workers()
