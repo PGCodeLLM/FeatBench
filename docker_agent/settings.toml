@@ -11,7 +11,7 @@ analysis_file = "../dataset/featbench_v1_0.json"
 dataset_source = "hf"
 
 # Hugging Face dataset configuration (only used when dataset_source = "hf")
-hf_dataset_repo = "PGCodeLLM/FeatBench_v1.0"
+hf_dataset_repo = "PGCodeLLM/FeatBench"
 hf_dataset_split = "test"
 
 # Execution configuration
