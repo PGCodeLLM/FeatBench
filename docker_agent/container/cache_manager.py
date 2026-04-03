@@ -6,12 +6,43 @@ import os
 import logging
 import tarfile
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from docker_agent.core.types import Container
 from docker_agent.container.image_builder import DockerImageBuilder
-from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID, EXP_SUFFIX
+from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID, EXP_SUFFIX, RESOURCE_LIMITS_ENABLED
 from docker_agent.core.exceptions import CacheError
+
+
+_REPO_CPU_OVERRIDES: dict[str, int] = {
+    "pybamm": 16,
+    "smolagents": 8,
+    "faststream": 32,
+    "xarray": 16,
+    "opcua-asyncio": 8,
+    "python-sdk": 8,
+}
+
+_REPO_MEM_OVERRIDES: dict[str, str] = {
+    "pybamm": "24g",
+    "smolagents": "8g",
+    "faststream": "48g",
+    "xarray": "24g",
+    "opcua-asyncio": "8g",
+    "python-sdk": "8g",
+}
+
+_DEFAULT_CPU = 2
+_DEFAULT_MEM = "4g"
+
+
+def get_cpu_limit(repo: str) -> int:
+    """Return the hard CPU cap for the given repo."""
+    repo_lower = repo.replace("/", "_").lower()
+    for key, cpus in _REPO_CPU_OVERRIDES.items():
+        if key in repo_lower:
+            return cpus
+    return _DEFAULT_CPU
 
 
 class CacheManager:
@@ -28,6 +59,17 @@ class CacheManager:
         self.image_builder = DockerImageBuilder(self.base_path, timeout)
         self.instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / instance_id
         self.instance_log_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def _resource_limits(self) -> dict[str, Any]:
+        """CPU and memory limits for this repo's containers."""
+        cpus = get_cpu_limit(self.repo)
+        mem = _DEFAULT_MEM
+        for key, m in _REPO_MEM_OVERRIDES.items():
+            if key in self.repo_lower:
+                mem = m
+                break
+        return {"nano_cpus": cpus * 10**9, "mem_limit": mem}
 
     @property
     def swap_volume_name(self) -> str:
@@ -68,7 +110,8 @@ class CacheManager:
                     "bind": "/logs",
                     "mode": "rw"
                 }
-            }
+            },
+            **(self._resource_limits if RESOURCE_LIMITS_ENABLED else {}),
         }
 
         # Disabling this for now, as it may cause disk permission issues in some environments

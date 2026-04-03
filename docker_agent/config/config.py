@@ -98,6 +98,7 @@ PROXY_HTTPS = config.proxy_https
 
 # Docker configuration
 DOCKER_TIMEOUT = config.docker_timeout
+RESOURCE_LIMITS_ENABLED = config.resource_limits_enabled
 
 # Prompt templates
 PROMPTS = config.PROMPTS
