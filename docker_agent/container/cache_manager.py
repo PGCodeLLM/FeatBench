@@ -43,8 +43,14 @@ class CacheManager:
             "command": "/bin/bash",
             "detach": True,
             "tty": True,
+
+            # Each container gets Docker's default bridge network (its own
+            # network namespace) so containers cannot collide on ports or
+            # interfere with each other, while still having outbound internet
+            # access via the bridge's NAT.
+            # "network_mode": "host",
+            
             # "runtime": "nvidia",
-            "network_mode": "host",
             # "device_requests": [{
             #     'count': -1,
             #     'capabilities': [['gpu']]
