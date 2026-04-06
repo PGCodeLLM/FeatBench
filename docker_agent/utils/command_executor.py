@@ -18,8 +18,7 @@ class BaseCommandExecutor(ABC):
     """Command executor base class"""
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        env = dict(os.environ)
-        self.env = env.update(DOCKER_ENVIRONMENT)
+        self.env = None  # Subclasses override if needed
 
     def _set_timeout(self, timeout, process=None):
         """Set timeout handling"""
@@ -56,6 +55,9 @@ class LocalCommandExecutor(BaseCommandExecutor):
     """Local command executor"""
     def __init__(self):
         super().__init__()
+        env = dict(os.environ)
+        env.update(DOCKER_ENVIRONMENT)
+        self.env = env
 
     def execute(self, command: str, workdir: str = "/", stream: bool = False, tty: bool = True, timeout: Optional[float] = None) -> Tuple[int, str]:
         """Execute command locally"""
@@ -101,7 +103,6 @@ class LocalCommandExecutor(BaseCommandExecutor):
                         try:
                             remaining = os.read(master_fd, 4096).decode('utf-8', errors='replace')
                             if remaining:
-                                print(remaining, end='', flush=True)
                                 output_lines.append(remaining)
                         except (OSError, BlockingIOError):
                             pass
@@ -113,7 +114,6 @@ class LocalCommandExecutor(BaseCommandExecutor):
                             data = os.read(master_fd, 4096)
                             if data:
                                 text = data.decode('utf-8', errors='replace')
-                                print(text, end='', flush=True)
                                 output_lines.append(text)
                         except (OSError, BlockingIOError):
                             continue
@@ -142,7 +142,6 @@ class LocalCommandExecutor(BaseCommandExecutor):
                         break
                 process.wait()
                 output = output.decode('utf-8', errors='replace')
-                print(output, end='', flush=True)
                 return process.returncode, output
         finally:
             try:
@@ -173,7 +172,6 @@ class LocalCommandExecutor(BaseCommandExecutor):
             try:
                 for line in process.stdout:
                     self.logger.debug(f"Command output: {line.rstrip()}")
-                    print(line, end='', flush=True)
                     output_lines.append(line)
                 
                 process.wait()
@@ -206,17 +204,17 @@ class LocalCommandExecutor(BaseCommandExecutor):
                     env=self.env
                 )
             output = result.stdout + result.stderr
-            print(output, end='', flush=True)
             return result.returncode, output
 
 
 class DockerCommandExecutor(BaseCommandExecutor):
     """Docker container command executor"""
 
-    def __init__(self, container: Container):
+    def __init__(self, container: Container, log_dir=None):
         super().__init__()
         self.container = container
-        self.client = docker.from_env()
+        self.client = docker.from_env(timeout=3700)  # Must exceed the 3600s container-side timeout
+        self._exec_log_path = log_dir / "exec.log" if log_dir else None
 
     def execute(self, command: str, workdir: str = "/workdir", stream: bool = False, tty: bool = True, timeout: Optional[float] = 3600) -> Tuple[int, str]:
         """Execute command in Docker container"""
@@ -225,6 +223,8 @@ class DockerCommandExecutor(BaseCommandExecutor):
                 return self._execute_pty(command, workdir, stream, timeout)
             else:
                 return self._execute_without_pty(command, workdir, stream, timeout)
+        except TestExecutionError:
+            raise  # Let timeout errors propagate
         except Exception as e:
             self.logger.error(f"Docker command execution error: {e}")
             return 1, str(e)
@@ -235,7 +235,7 @@ class DockerCommandExecutor(BaseCommandExecutor):
             timeout_command = f"timeout -s TERM -k 10s {int(timeout)}s bash -c {shlex.quote(command)}"
         else:
             timeout_command = command
-            
+
         exec_instance = self.client.api.exec_create(
             self.container.id,
             cmd=["/bin/bash", "-c", timeout_command],
@@ -249,23 +249,32 @@ class DockerCommandExecutor(BaseCommandExecutor):
 
         if stream:
             output_lines = []
-            for line in output_stream:
-                line_str = line.decode('utf-8', errors='replace')
-                self.logger.debug(f"Command output: {line_str.rstrip()}")
-                print(line_str, end='', flush=True)
-                output_lines.append(line_str)
+            try:
+                for chunk in output_stream:
+                    line_str = chunk.decode('utf-8', errors='replace')
+                    output_lines.append(line_str)
+                    if self._exec_log_path:
+                        with open(self._exec_log_path, "a", encoding="utf-8") as f:
+                            f.write(line_str)
+            except Exception as e:
+                self.logger.warning(f"Stream interrupted: {e}. Preserving {len(output_lines)} captured chunks.")
 
-            exit_code = self.client.api.exec_inspect(exec_instance['Id'])['ExitCode']
-            if timeout is not None and (exit_code == 124 or exit_code == 137):
+            try:
+                exit_code = self.client.api.exec_inspect(exec_instance['Id'])['ExitCode']
+            except Exception:
+                exit_code = 1
+
+            output = ''.join(output_lines)
+
+            if timeout is not None and exit_code in (124, 137):
                 raise TestExecutionError(f"Container command execution timeout after {timeout}s")
 
-            return exit_code, ''.join(output_lines)
+            return exit_code, output
         else:
             output = output_stream.decode('utf-8', errors='replace')
-            print(output, end='', flush=True)
 
             exit_code = self.client.api.exec_inspect(exec_instance['Id'])['ExitCode']
-            if timeout is not None and (exit_code == 124 or exit_code == 137):
+            if timeout is not None and exit_code in (124, 137):
                 raise TestExecutionError(f"Container command execution timeout after {timeout}s")
 
             return exit_code, output

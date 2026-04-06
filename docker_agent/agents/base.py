@@ -14,13 +14,13 @@ from docker_agent.core.exceptions import AgentSetupError
 class BaseAgent:
     """Agent base abstract class"""
 
-    def __init__(self, container: Container, agent_config):
+    def __init__(self, container: Container, agent_config, log_dir=None):
         self.container = container
         self.agent_config = agent_config
         self.logger = logging.getLogger(__name__)
         self.base_path = Path(__file__).parent.parent
         self.path_analyzer = PatchAnalyzer()
-        self.docker_executor = DockerCommandExecutor(container)
+        self.docker_executor = DockerCommandExecutor(container, log_dir=log_dir)
 
     def setup(self):
         """General logic for setting up agent environment"""

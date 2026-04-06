@@ -22,8 +22,8 @@ class OracleAgent(BaseAgent):
         before calling ``agent.run()``.
     """
 
-    def __init__(self, container, agent_config):
-        super().__init__(container, agent_config)
+    def __init__(self, container, agent_config, log_dir=None):
+        super().__init__(container, agent_config, log_dir=log_dir)
         # Set by AgentManager.evaluate() before run() is called.
         self.spec_patch: Optional[List[Dict]] = None
 

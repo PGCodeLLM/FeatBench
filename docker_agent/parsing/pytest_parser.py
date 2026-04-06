@@ -31,9 +31,11 @@ class PytestResultParser:
         self._parse_output()
     
     def _clean_ansi_codes(self, text: str) -> str:
-        """Clean ANSI escape codes"""
-        ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
-        return ansi_escape.sub('', text)
+        """Clean ANSI escape codes and TTY artifacts"""
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+        text = ansi_escape.sub('', text)
+        text = text.replace('\r', '')
+        return text
     
     def _parse_output(self):
         """Parse pytest output"""
