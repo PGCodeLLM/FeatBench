@@ -274,19 +274,23 @@ class ContainerOperator:
         else:
             self.logger.info("conan cmake env set up successfully")
 
-    def _setup_tox_env(self, repo_name: str) -> None:
-        """Prepare tox repository test environment by installing package in editable mode."""
-        self.logger.info("Setting up tox env with editable install")
+    # Repos that should NOT receive the generic `pip install -e .` step.
+    _NO_EDITABLE_INSTALL_REPOS: set[str] = {
+        "scikit-learn/scikit-learn",
+        "jupyterlab/jupyter-ai",
+        "reflex-dev/reflex",
+    }
+
+    def _setup_editable_install(self, repo_name: str) -> None:
+        """Generic `pip install -e .` for repos that need an editable install."""
+        self.logger.info(f"Running pip install -e . for {repo_name}")
         exit_code, output = self.docker_executor.execute(
-            "pip install -e .", f"/workdir/swap/{repo_name}", tty=False, timeout=300
+            "pip install -e .", f"/workdir/swap/{repo_name}", tty=False, timeout=600
         )
         if exit_code != 0:
-            self.logger.error(f"tox env setup failed: {output}")
-            raise ContainerOperationError(
-                f"tox env setup failed: {output}",
-                container_id=self.container.id if self.container else None,
-            )
-        self.logger.info("tox env set up successfully")
+            self.logger.warning(f"pip install -e . for {repo_name} failed (non-fatal): {output}")
+        else:
+            self.logger.info(f"pip install -e . for {repo_name} succeeded")
 
     def _setup_pybamm_env(self, repo_name: str) -> None:
         """Prepare PyBaMM test environment by installing package with all extras."""
@@ -328,14 +332,20 @@ class ContainerOperator:
         Called once before the agent runs and once before tests run, so that
         git checkout in between doesn't break the environment.
         """
+        # Repo-specific custom setup steps (run in addition to the generic install).
         if repo_name == "conan":
             self._setup_conan_cmake_env(repo_name)
-        if repo_name == "tox":
-            self._setup_tox_env(repo_name)
-        if repo_name.lower() == "pybamm" and instance_id != "pybamm-team__PyBaMM-4394":
-            self._setup_pybamm_env(repo_name)
         if repo_name == "jupyter-ai":
             self._setup_jupyter_ai_env(repo_name)
+
+        # PyBaMM needs the [all] extras, so it has its own install path.
+        if repo_name.lower() == "pybamm" and instance_id != "pybamm-team__PyBaMM-4394":
+            self._setup_pybamm_env(repo_name)
+            return
+
+        # Generic `pip install -e .` for everything else, except excluded repos.
+        if self.repo not in self._NO_EDITABLE_INSTALL_REPOS:
+            self._setup_editable_install(repo_name)
 
     def run_tests_in_container(
         self,
@@ -383,15 +393,15 @@ class ContainerOperator:
             base_cmd += " --run-integration"
 
         # --- Determine xdist configuration ---------------------------------
-        use_xdist_effective = use_xdist and _should_use_xdist(repo_name)
+        # base_cmd has NO xdist-related flags. Each invocation below decides
+        # whether to add `-n N` or `-p no:xdist` to override any project-level
+        # `addopts = -n auto`.
+        xdist_enabled_repo = _should_use_xdist(repo_name)
+        use_xdist_effective = use_xdist and xdist_enabled_repo
         xdist_workers = 0
         if use_xdist_effective:
             self._install_xdist(repo_name)
             xdist_workers = get_cpu_limit(self.repo)
-        else:
-            # Disable xdist plugin to override any project-level addopts
-            # (e.g. -n auto in pyproject.toml) that would otherwise take effect.
-            base_cmd += " -p no:xdist"
 
         if log_file:
             self.docker_executor.execute(f"bash -c '> /logs/{log_file}'", "/")
@@ -401,65 +411,71 @@ class ContainerOperator:
         xdist_overrides = _INSTANCE_FILE_XDIST_OVERRIDES.get(instance_id, {}) if instance_id else {}
 
         # Only split when we have string-based test node IDs (the evaluation path)
+        # A file may be in isolated_files, xdist_overrides, both, or neither.
+        # Files in either set always get their own pytest invocation.
+        # The xdist override (if any) sets the worker count for that invocation.
         if test_files is not None and test_files and isinstance(test_files[0], str):
             normal_args = []
-            isolated_args = []
-            xdist_override_groups: dict[int, list[str]] = {}
+            # file_path -> {"n": Optional[int], "args": list[str]}
+            #   n is None  -> isolated only (disable xdist)
+            #   n is int   -> override (with explicit -n N), implies own invocation
+            per_file_groups: dict[str, dict] = {}
 
             for arg in pytest_args:
                 file_path = arg.split("::")[0]
-                if file_path in isolated_files:
-                    isolated_args.append(arg)
-                elif file_path in xdist_overrides:
-                    n = xdist_overrides[file_path]
-                    xdist_override_groups.setdefault(n, []).append(arg)
+                is_isolated = file_path in isolated_files
+                override_n = xdist_overrides.get(file_path)
+                if is_isolated or override_n is not None:
+                    if file_path not in per_file_groups:
+                        per_file_groups[file_path] = {"n": override_n, "args": []}
+                    per_file_groups[file_path]["args"].append(arg)
                 else:
                     normal_args.append(arg)
 
-            has_splits = bool(isolated_args or xdist_override_groups)
+            has_splits = bool(per_file_groups)
         else:
             normal_args = pytest_args
+            per_file_groups = {}
             has_splits = False
 
         all_matched: Set[str] = set()
         all_output: list[str] = []
 
+        def _with_xdist(cmd: str, n: Optional[int]) -> str:
+            """Append the right xdist flag(s) to a base pytest command.
+
+            n is None  -> disable xdist (overrides project-level `-n auto`),
+                          but only if the repo's project config might enable it.
+            n is int   -> explicitly run with `-n {n}` workers.
+            """
+            if n is None:
+                if xdist_enabled_repo:
+                    return f"{cmd} -p no:xdist"
+                return cmd
+            return f"{cmd} -n {n}"
+
         # --- Run main group ------------------------------------------------
         if normal_args:
-            cmd_main = base_cmd
-            if use_xdist_effective and xdist_workers > 1:
-                cmd_main = f"{cmd_main} -n {xdist_workers}"
+            n_main = xdist_workers if (use_xdist_effective and xdist_workers > 1) else None
+            cmd_main = _with_xdist(base_cmd, n_main)
             matched, output = self._run_pytest_group(
                 repo_name, normal_args, cmd_main, expected_tests, expected_statuses, log_file
             )
             all_matched.update(matched)
             all_output.append(output)
 
-        # --- Run isolated files (each in its own invocation, no xdist) -----
-        if has_splits and isolated_args:
-            # Group by file so each file gets its own invocation
-            iso_by_file: dict[str, list[str]] = {}
-            for arg in isolated_args:
-                fp = arg.split("::")[0]
-                iso_by_file.setdefault(fp, []).append(arg)
-
-            for file_path, args in iso_by_file.items():
-                self.logger.info(f"Running isolated test file: {file_path}")
+        # --- Run per-file groups (isolated and/or xdist-override) ----------
+        if has_splits:
+            for file_path, group in per_file_groups.items():
+                n_workers = group["n"]
+                args = group["args"]
+                if n_workers is not None:
+                    self.logger.info(f"Running per-file group with -n {n_workers}: {file_path}")
+                else:
+                    self.logger.info(f"Running isolated test file: {file_path}")
+                cmd = _with_xdist(base_cmd, n_workers)
                 matched, output = self._run_pytest_group(
-                    repo_name, args, base_cmd, expected_tests, expected_statuses, log_file
-                )
-                all_matched.update(matched)
-                all_output.append(output)
-
-        # --- Run xdist-override groups -------------------------------------
-        if has_splits and xdist_override_groups:
-            for n_workers, args in xdist_override_groups.items():
-                self.logger.info(f"Running xdist-override group with -n {n_workers}: {[a.split('::')[0] for a in args]}")
-                override_cmd = base_cmd
-                if n_workers > 1:
-                    override_cmd = f"{base_cmd} -n {n_workers}"
-                matched, output = self._run_pytest_group(
-                    repo_name, args, override_cmd, expected_tests, expected_statuses, log_file
+                    repo_name, args, cmd, expected_tests, expected_statuses, log_file
                 )
                 all_matched.update(matched)
                 all_output.append(output)

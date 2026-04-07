@@ -20,8 +20,18 @@ class TraeAgent(BaseAgent):
         if exit_code != 0:
             raise AgentSetupError(f"Failed to clone agent repository: {output}", agent_name=self.agent_config.name)
 
-    def run(self, problem_statement: str, instance_id: str, repo_name: str) -> tuple[bool, str]:
-        """Run trae-agent to solve problem"""
+    def run(
+        self,
+        problem_statement: str,
+        instance_id: str,
+        repo_name: str,
+        base_commit: str,
+    ) -> tuple[bool, str]:
+        """Run trae-agent to solve problem.
+
+        ``base_commit`` is unused: trae-agent generates patch.diff itself
+        via its --patch-path flag.
+        """
         self.logger.info(f"Running {self.agent_config.name} to solve problem {instance_id}")
 
         try:
@@ -49,6 +59,7 @@ class TraeAgent(BaseAgent):
             f"--model {self.agent_config.model} "
             f"--provider {self.agent_config.provider} "
             f"--config-file /workdir/swap/trae-agent/{self.agent_config.config_file} "
+            "--console-type simple "
             "--trajectory-file /logs/trajectory.json")
 
     @staticmethod

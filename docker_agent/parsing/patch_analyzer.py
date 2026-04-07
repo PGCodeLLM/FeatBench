@@ -22,7 +22,7 @@ class PatchAnalyzer:
         self.logger = logging.getLogger(__name__)
         
         self.test_patterns = [
-            r'test.*\.py$',
+            # r'test.*\.py$',  # this is too generic and can match non-test files
             r'.*test\.py$', 
             r'.*_test\.py$',
             r'.*/test[s]?/.*\.py$',

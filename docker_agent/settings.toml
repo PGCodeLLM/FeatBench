@@ -34,7 +34,7 @@ proxy_https = "http://127.0.0.1:58591"
 
 # Docker configuration
 docker_timeout = 180
-resource_limits_enabled = false
+resource_limits_enabled = true
 
 # Dockerfile template
 [DOCKERFILE]

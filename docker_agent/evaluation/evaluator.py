@@ -32,6 +32,13 @@ class AgentEvaluator(BaseRunner):
         self.result_manager = EvaluationResultManager(self.base_path)
         self.patch_analyzer = PatchAnalyzer()
         self.shared_data_lock = threading.Lock()
+        self._executor = None  # Set during evaluate/reevaluate for signal-handler shutdown
+
+    def _on_signal(self):
+        """Shut down the executor so no new workers start, then clean up containers."""
+        if self._executor is not None:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+        super()._on_signal()
 
     def _setup_instance_logger(self, instance_id: str, log_dir: Path):
         """Set up a per-instance file logger so each instance's harness logs go to its own directory."""
@@ -106,6 +113,7 @@ class AgentEvaluator(BaseRunner):
         passed_count = 0
         failed_count = 0
         with ThreadPoolExecutor(max_workers=MAX_EVAL_WORKERS) as executor:
+            self._executor = executor
             future_to_spec = {
                 executor.submit(self._eval_spec, agents, spec): spec
                 for agents, spec in all_specs
@@ -130,6 +138,8 @@ class AgentEvaluator(BaseRunner):
 
                     pbar.set_postfix({"pass": passed_count, "fail": failed_count})
                     pbar.update(1)
+
+            self._executor = None
 
         self.logger.info(f"Evaluation completed: {passed_count} passed, {failed_count} failed")
 
@@ -204,6 +214,7 @@ class AgentEvaluator(BaseRunner):
         passed_count = 0
         failed_count = 0
         with ThreadPoolExecutor(max_workers=MAX_EVAL_WORKERS) as executor:
+            self._executor = executor
             future_to_key = {
                 executor.submit(self._reeval_spec, spec, agent_name, model_name, patch_content): (agent_name, spec.instance_id)
                 for spec, agent_name, model_name, patch_content in work_items
@@ -229,10 +240,14 @@ class AgentEvaluator(BaseRunner):
                     pbar.set_postfix({"pass": passed_count, "fail": failed_count})
                     pbar.update(1)
 
+            self._executor = None
+
         self.logger.info(f"Re-evaluation completed: {passed_count} passed, {failed_count} failed")
 
     def _reeval_spec(self, spec: Spec, agent_name: str, model_name: str, patch_content: str) -> Optional[dict]:
         """Re-evaluate a single spec with a cached patch."""
+        if self.cleanup_in_progress:
+            return None
         container = None
         try:
             container = self.docker_manager.create_container(spec)
@@ -259,6 +274,8 @@ class AgentEvaluator(BaseRunner):
                 self.docker_manager.cleanup_container(container, force_remove=True)
 
     def _eval_spec(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
+        if self.cleanup_in_progress:
+            return None
         container = None
         results = []
         try:

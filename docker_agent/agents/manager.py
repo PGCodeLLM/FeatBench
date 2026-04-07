@@ -203,11 +203,12 @@ class AgentManager:
         try:
             self.agent.setup()
 
+            operator.checkout_commit(spec.base_commit, use_docker=True)
+
             # Repo-specific env setup (cmake, editable installs, etc.) so
             # the agent sees a fully configured environment when it runs.
             operator.setup_repo_env(spec.repo_name, instance_id=spec.instance_id)
 
-            operator.checkout_commit(spec.base_commit, use_docker=True)
             if isinstance(self.agent, OracleAgent):
                 self.agent.spec_patch = spec.patch
 
@@ -215,6 +216,7 @@ class AgentManager:
                 spec.problem_statement,
                 spec.instance_id,
                 spec.repo_name,
+                spec.base_commit,
             )
 
             # Copy patch.diff into /logs if it exists
