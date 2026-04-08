@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import re
 import shlex
 from typing import Tuple, Optional
 import docker
@@ -13,6 +14,11 @@ import signal
 from docker_agent.core.types import Container
 from docker_agent.config.config import DOCKER_ENVIRONMENT
 from docker_agent.core.exceptions import TestExecutionError
+
+# Strip ANSI CSI escape sequences (colors, cursor movement, etc.) from
+# streamed exec output before writing it to exec.log so the file is
+# human-readable.
+_ANSI_ESCAPE_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 
 class BaseCommandExecutor(ABC):
     """Command executor base class"""
@@ -249,15 +255,28 @@ class DockerCommandExecutor(BaseCommandExecutor):
 
         if stream:
             output_lines = []
+            log_fh = None
+            if self._exec_log_path:
+                try:
+                    log_fh = open(self._exec_log_path, "a", encoding="utf-8")
+                except Exception as e:
+                    self.logger.warning(f"Could not open {self._exec_log_path}: {e}")
             try:
                 for chunk in output_stream:
                     line_str = chunk.decode('utf-8', errors='replace')
                     output_lines.append(line_str)
-                    if self._exec_log_path:
-                        with open(self._exec_log_path, "a", encoding="utf-8") as f:
-                            f.write(line_str)
+                    if log_fh is not None:
+                        # Strip ANSI escapes and CR so the log is readable.
+                        clean = _ANSI_ESCAPE_RE.sub('', line_str).replace('\r', '')
+                        log_fh.write(clean)
             except Exception as e:
                 self.logger.warning(f"Stream interrupted: {e}. Preserving {len(output_lines)} captured chunks.")
+            finally:
+                if log_fh is not None:
+                    try:
+                        log_fh.close()
+                    except Exception:
+                        pass
 
             try:
                 exit_code = self.client.api.exec_inspect(exec_instance['Id'])['ExitCode']

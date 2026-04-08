@@ -111,7 +111,12 @@ terminal_height = terminal_size.lines
 DOCKER_ENVIRONMENT = {
     "COLUMNS": str(terminal_width),
     "LINES": str(terminal_height),
-    "HF_HUB_OFFLINE": "1"
+    "HF_HUB_OFFLINE": "1",
+    # Disable ANSI color output from tools that respect these conventions
+    # (pytest, rich, click, etc.) so exec.log stays human-readable.
+    "NO_COLOR": "1",
+    "PY_COLORS": "0",
+    "TERM": "dumb",
 }
 
 # Preprocess Dockerfile template with proxy and user configurations
