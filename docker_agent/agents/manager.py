@@ -107,16 +107,25 @@ class AgentManager:
         patch_analyzer = PatchAnalyzer()
         docker_executor = DockerCommandExecutor(self.container, log_dir=self.log_dir)
 
-        # Re-run repo env setup once before tests in case git checkout
-        # between agent run and test run removed build artifacts.
+        # Prepare the repo state once for both F2P and P2P:
+        # checkout -> env setup -> apply patch (+ test patch).
+        # F2P/P2P then share the same repo state without re-doing any of this.
+        operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
         operator.setup_repo_env(spec.repo_name, instance_id=spec.instance_id)
+        patch_analyzer.apply_patch_content_to_container(
+            patch_content,
+            docker_executor,
+            "/workdir/swap/" + spec.repo_name,
+            include_test=False,
+        )
+        if spec.test_patch:
+            operator.apply_patches(spec.test_patch)
 
         # ---- FAIL_TO_PASS ----------------------------------------
         f2p_passed: set = set()
         if f2p_tests:
             f2p_passed = self._run_test_group_with_retries(
-                spec, operator, patch_analyzer, docker_executor,
-                patch_content, f2p_tests,
+                spec, operator, f2p_tests,
                 use_xdist=True, log_file="f2p_pytest.log",
                 expected_status=[TestStatus.PASSED],
             )
@@ -125,8 +134,7 @@ class AgentManager:
         p2p_passed: set = set()
         if p2p_tests:
             p2p_passed = self._run_test_group_with_retries(
-                spec, operator, patch_analyzer, docker_executor,
-                patch_content, p2p_tests,
+                spec, operator, p2p_tests,
                 use_xdist=True, log_file="p2p_pytest.log",
                 expected_status=[TestStatus.PASSED],
             )
@@ -147,27 +155,16 @@ class AgentManager:
         }
 
     def _run_test_group_with_retries(
-        self, spec, operator, patch_analyzer, docker_executor,
-        patch_content: str, expected_tests: List[str],
+        self, spec, operator, expected_tests: List[str],
         use_xdist: bool, log_file: str,
         expected_status: List,
     ) -> set:
         """Run a test group (F2P or P2P) with up to _MAX_TEST_RETRIES retries.
 
-        The checkout + patch is done once. Retries re-run only the files that
-        contain still-failing expected tests, without resetting the repo.
+        Assumes the caller has already prepared the repo (checkout, env setup,
+        patch apply). Retries re-run only the files that contain still-failing
+        expected tests, without resetting the repo.
         """
-        # Checkout and apply patches once
-        operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-        patch_analyzer.apply_patch_content_to_container(
-            patch_content,
-            docker_executor,
-            "/workdir/swap/" + spec.repo_name,
-            include_test=False,
-        )
-        if spec.test_patch:
-            operator.apply_patches(spec.test_patch)
-
         all_passed: set = set()
 
         for attempt in range(1, self._MAX_TEST_RETRIES + 1):
@@ -279,7 +276,6 @@ class AgentManager:
         reeval_ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
 
         try:
-            operator.checkout_commit(spec.base_commit, use_docker=True)
             test_result = self._run_tests(spec, operator, patch_content)
 
             return {
