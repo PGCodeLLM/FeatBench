@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 
 from docker_agent.core.types import Container
 from docker_agent.container.image_builder import DockerImageBuilder
-from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID, EXP_SUFFIX, RESOURCE_LIMITS_ENABLED
+from docker_agent.config.config import DOCKER_ENVIRONMENT, EXP_UUID, EXP_ID, RESOURCE_LIMITS_ENABLED
 from docker_agent.core.exceptions import CacheError
 
 
@@ -57,7 +57,7 @@ class CacheManager:
         self.repo_id = repo_id
         self.repo_lower = self.repo.lower()
         self.image_builder = DockerImageBuilder(self.base_path, timeout)
-        self.instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / instance_id
+        self.instance_log_dir = self.base_path / "logs" / EXP_ID / instance_id
         self.instance_log_dir.mkdir(parents=True, exist_ok=True)
 
     @property

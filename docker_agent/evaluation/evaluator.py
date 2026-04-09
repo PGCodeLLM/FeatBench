@@ -18,7 +18,7 @@ from docker_agent.container.container_operator import ContainerOperator
 from docker_agent.agents.manager import AgentManager
 from docker_agent.parsing.patch_analyzer import PatchAnalyzer
 from docker_agent.evaluation.results import EvaluationResultManager
-from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_FILE, MAX_SPECS_PER_REPO, MAX_EVAL_WORKERS, LOG_FILE, EXP_SUFFIX
+from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_DIR, MAX_SPECS_PER_REPO, MAX_EVAL_WORKERS, EXP_ID
 from docker_agent.core.types import Spec
 
 
@@ -29,7 +29,7 @@ class AgentEvaluator(BaseRunner):
         """Initialize Agent Evaluator"""
         super().__init__()
 
-        self.result_manager = EvaluationResultManager(self.base_path)
+        self.result_manager = EvaluationResultManager(EVALUATION_RESULTS_DIR / f"{EXP_ID}.json")
         self.patch_analyzer = PatchAnalyzer()
         self.shared_data_lock = threading.Lock()
         self._executor = None  # Set during evaluate/reevaluate for signal-handler shutdown
@@ -72,7 +72,7 @@ class AgentEvaluator(BaseRunner):
             self.logger.info(f"Filtering to {len(instance_id_set)} specified instance IDs")
 
         # Load cached results so we can resume without re-running completed specs
-        all_results, evaluated_keys = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
+        all_results, evaluated_keys = self.result_manager.load_existing_results()
         if evaluated_keys:
             self.logger.info(f"Resuming evaluation: {len(evaluated_keys)} agent/instance pairs already cached")
 
@@ -126,7 +126,7 @@ class AgentEvaluator(BaseRunner):
                         results = future.result()
                         if results:
                             all_results.extend(results)
-                            self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
+                            self.result_manager.save_evaluation_results(all_results)
                             for r in results:
                                 if r.get("success"):
                                     passed_count += 1
@@ -155,8 +155,8 @@ class AgentEvaluator(BaseRunner):
             agent_names: List of agent names to re-evaluate
             instance_ids: List of instance IDs to re-evaluate. If None, re-evaluates all.
         """
-        # Load cached results from the experiment identified by EXP_SUFFIX
-        cached_results, _ = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
+        # Load cached results from the experiment identified by EXP_ID
+        cached_results, _ = self.result_manager.load_existing_results()
         if not cached_results:
             self.logger.error("No cached results found for the given timestamp. Nothing to re-evaluate.")
             return
@@ -228,7 +228,7 @@ class AgentEvaluator(BaseRunner):
                         if result:
                             with self.shared_data_lock:
                                 all_results[result_index[key]] = result
-                            self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
+                            self.result_manager.save_evaluation_results(all_results)
                             if result.get("success"):
                                 passed_count += 1
                             else:
@@ -255,7 +255,7 @@ class AgentEvaluator(BaseRunner):
             with self.shared_data_lock:
                 self.active_containers.append(container)
 
-            instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / spec.instance_id
+            instance_log_dir = self.base_path / "logs" / EXP_ID / spec.instance_id
             self._setup_instance_logger(spec.instance_id, instance_log_dir)
 
             operator = ContainerOperator(spec.repo, container, log_dir=instance_log_dir)
@@ -285,7 +285,7 @@ class AgentEvaluator(BaseRunner):
             with self.shared_data_lock:
                 self.active_containers.append(container)
 
-            instance_log_dir = self.base_path / "logs" / EXP_SUFFIX / spec.instance_id
+            instance_log_dir = self.base_path / "logs" / EXP_ID / spec.instance_id
             self._setup_instance_logger(spec.instance_id, instance_log_dir)
 
             operator = ContainerOperator(spec.repo, container, log_dir=instance_log_dir)

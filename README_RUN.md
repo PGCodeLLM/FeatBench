@@ -124,4 +124,4 @@ Run the benchmark evaluation:
 python -m docker_agent.runner.main --evaluate --agents trae-agent
 ```
 
-Results are saved in `docker_agent/evaluation_results.json`
+Results are saved in `evaluation_results/<timestamp>_<model>.json`

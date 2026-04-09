@@ -22,7 +22,11 @@ max_eval_workers = 16
 # File names
 setup_files_list = "setup_files_list.json"
 recommended_python_version = "recommended_python_version.json"
-evaluation_results_file = "evaluation_results.json"
+
+# Directory where per-experiment evaluation result files are written.
+# Each run produces <evaluation_results_dir>/<exp_id>.json, where exp_id is
+# "<timestamp>_<model>" computed at startup in config.py.
+evaluation_results_dir = "evaluation_results"
 
 # Trae configuration
 trajectory_timestamp_format = "%Y%m%d_%H%M%S"
