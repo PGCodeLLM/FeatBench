@@ -23,9 +23,10 @@ from docker_agent.core.exceptions import ConfigurationError
 class AgentManager:
     """Agent manager, responsible for setting up and running different agents in container"""
 
-    def __init__(self, container: docker.models.containers.Container, agent_config):
+    def __init__(self, container: docker.models.containers.Container, agent_config, log_dir=None):
         self.container = container
         self.agent_config = agent_config
+        self.log_dir = log_dir
         self.logger = logging.getLogger(__name__)
         self.agent = self._create_agent()
 
@@ -34,15 +35,15 @@ class AgentManager:
         agent_name = self.agent_config.name.lower()
 
         if agent_name == "trae-agent":
-            return TraeAgent(self.container, self.agent_config)
+            return TraeAgent(self.container, self.agent_config, log_dir=self.log_dir)
         elif agent_name == "gemini-cli":
-            return GeminiCLIAgent(self.container, self.agent_config)
+            return GeminiCLIAgent(self.container, self.agent_config, log_dir=self.log_dir)
         elif agent_name == "claude-code":
-            return ClaudeCodeAgent(self.container, self.agent_config)
+            return ClaudeCodeAgent(self.container, self.agent_config, log_dir=self.log_dir)
         elif agent_name == "openhands":
-            return OpenHandsAgent(self.container, self.agent_config)
+            return OpenHandsAgent(self.container, self.agent_config, log_dir=self.log_dir)
         elif agent_name == "oracle":
-            return OracleAgent(self.container, self.agent_config)
+            return OracleAgent(self.container, self.agent_config, log_dir=self.log_dir)
         elif agent_name == "agentless":
             raise NotImplementedError("Agentless evaluation is not included")
         else:
@@ -90,6 +91,8 @@ class AgentManager:
                 repo_lock_path.unlink()
                 self.logger.info(f"Released lock for {repo_name}")
 
+    _MAX_TEST_RETRIES = 3
+
     def _run_tests(self, spec, operator, patch_content) -> Dict[str, Any]:
         """Run F2P and P2P tests with a given patch. Shared by evaluate() and reevaluate()."""
         from docker_agent.parsing.pytest_parser import TestStatus
@@ -102,10 +105,13 @@ class AgentManager:
             p2p_tests.extend(spec.PASS_TO_PASS.split(", "))
 
         patch_analyzer = PatchAnalyzer()
-        docker_executor = DockerCommandExecutor(self.container)
+        docker_executor = DockerCommandExecutor(self.container, log_dir=self.log_dir)
 
-        # ---- FAIL_TO_PASS ----------------------------------------
+        # Prepare the repo state once for both F2P and P2P:
+        # checkout -> env setup -> apply patch (+ test patch).
+        # F2P/P2P then share the same repo state without re-doing any of this.
         operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
+        operator.setup_repo_env(spec.repo_name, instance_id=spec.instance_id)
         patch_analyzer.apply_patch_content_to_container(
             patch_content,
             docker_executor,
@@ -115,29 +121,22 @@ class AgentManager:
         if spec.test_patch:
             operator.apply_patches(spec.test_patch)
 
+        # ---- FAIL_TO_PASS ----------------------------------------
         f2p_passed: set = set()
         if f2p_tests:
-            f2p_passed, _ = operator.run_tests_in_container(
-                spec.repo_name, f2p_tests, [TestStatus.PASSED], False, log_file="f2p_pytest.log",
-                instance_id=spec.instance_id,
+            f2p_passed = self._run_test_group_with_retries(
+                spec, operator, f2p_tests,
+                use_xdist=True, log_file="f2p_pytest.log",
+                expected_status=[TestStatus.PASSED],
             )
 
         # ---- PASS_TO_PASS ----------------------------------------
-        operator.checkout_commit(spec.base_commit, exclude_file=["patch.diff"], use_docker=True)
-        patch_analyzer.apply_patch_content_to_container(
-            patch_content,
-            docker_executor,
-            "/workdir/swap/" + spec.repo_name,
-            include_test=False,
-        )
-        if spec.test_patch:
-            operator.apply_patches(spec.test_patch)
-
         p2p_passed: set = set()
         if p2p_tests:
-            p2p_passed, _ = operator.run_tests_in_container(
-                spec.repo_name, p2p_tests, [TestStatus.PASSED], log_file="p2p_pytest.log",
-                instance_id=spec.instance_id,
+            p2p_passed = self._run_test_group_with_retries(
+                spec, operator, p2p_tests,
+                use_xdist=True, log_file="p2p_pytest.log",
+                expected_status=[TestStatus.PASSED],
             )
 
         success_f2p = all(test in f2p_passed for test in f2p_tests)
@@ -155,6 +154,45 @@ class AgentManager:
             "expected_p2p_tests": p2p_tests,
         }
 
+    def _run_test_group_with_retries(
+        self, spec, operator, expected_tests: List[str],
+        use_xdist: bool, log_file: str,
+        expected_status: List,
+    ) -> set:
+        """Run a test group (F2P or P2P) with up to _MAX_TEST_RETRIES retries.
+
+        Assumes the caller has already prepared the repo (checkout, env setup,
+        patch apply). Retries re-run only the files that contain still-failing
+        expected tests, without resetting the repo.
+        """
+        all_passed: set = set()
+
+        for attempt in range(1, self._MAX_TEST_RETRIES + 1):
+            remaining = [t for t in expected_tests if t not in all_passed]
+            if not remaining:
+                break
+
+            if attempt > 1:
+                self.logger.info(
+                    f"Retry {attempt}/{self._MAX_TEST_RETRIES}: "
+                    f"re-running {len({t.split('::')[0] for t in remaining})} file(s) "
+                    f"for {len(remaining)} failing test(s)"
+                )
+
+            tests_to_run = expected_tests if attempt == 1 else remaining
+            retry_log = log_file if attempt == 1 else f"{log_file}.retry{attempt}"
+
+            passed, _ = operator.run_tests_in_container(
+                spec.repo_name, tests_to_run, expected_status, use_xdist,
+                log_file=retry_log, instance_id=spec.instance_id,
+            )
+            all_passed.update(passed)
+
+            if all(t in all_passed for t in expected_tests):
+                break
+
+        return all_passed
+
     def evaluate(self, spec, operator, *args, **kwargs) -> Dict[str, Any]:
         """Evaluate agent on spec"""
         # We are not locking repos anymore, since we copy the repo into a unique named volume for each container
@@ -163,6 +201,11 @@ class AgentManager:
             self.agent.setup()
 
             operator.checkout_commit(spec.base_commit, use_docker=True)
+
+            # Repo-specific env setup (cmake, editable installs, etc.) so
+            # the agent sees a fully configured environment when it runs.
+            operator.setup_repo_env(spec.repo_name, instance_id=spec.instance_id)
+
             if isinstance(self.agent, OracleAgent):
                 self.agent.spec_patch = spec.patch
 
@@ -170,6 +213,7 @@ class AgentManager:
                 spec.problem_statement,
                 spec.instance_id,
                 spec.repo_name,
+                spec.base_commit,
             )
 
             # Copy patch.diff into /logs if it exists
@@ -232,7 +276,6 @@ class AgentManager:
         reeval_ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
 
         try:
-            operator.checkout_commit(spec.base_commit, use_docker=True)
             test_result = self._run_tests(spec, operator, patch_content)
 
             return {

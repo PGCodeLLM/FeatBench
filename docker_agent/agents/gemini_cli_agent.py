@@ -63,7 +63,13 @@ class GeminiCLIAgent(BaseAgent):
     #  Run                                                                 #
     # ------------------------------------------------------------------ #
 
-    def run(self, problem_statement: str, instance_id: str, repo_name: str) -> tuple[bool, str]:
+    def run(
+        self,
+        problem_statement: str,
+        instance_id: str,
+        repo_name: str,
+        base_commit: str,
+    ) -> tuple[bool, str]:
         """Run gemini-cli non-interactively to solve the problem."""
         self.logger.info(
             f"Running {self.agent_config.name} to solve problem {instance_id}"
@@ -83,14 +89,8 @@ class GeminiCLIAgent(BaseAgent):
             if exit_code != 0:
                 return False, agent_output
 
-            # Capture the changes made by the agent as a unified diff.
-            diff_cmd = f"git diff > {patch_path}"
-            diff_exit, diff_output = self.docker_executor.execute(
-                diff_cmd, repo_workdir, stream=True
-            )
-
-            if diff_exit != 0:
-                self.logger.warning(f"Failed to generate git diff: {diff_output}")
+            diff_ok, _ = self._generate_patch_diff(repo_workdir, patch_path, base_commit)
+            if not diff_ok:
                 return False, agent_output
 
             return True, agent_output

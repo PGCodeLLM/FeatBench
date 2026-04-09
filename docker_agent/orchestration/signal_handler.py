@@ -21,14 +21,13 @@ class SignalHandler:
     def _handle_signal(self, signum, frame):
         """Handle termination signal"""
         if self.cleanup_in_progress:
-            self.logger.info("Cleanup already in progress, ignoring duplicate signal")
             return
 
         self.cleanup_in_progress = True
-        self.logger.info(f"\nReceived signal {signum}, cleaning up containers...")
+        print("\nReceived interrupt, cleaning up containers...", file=sys.stderr, flush=True)
+        self.logger.info(f"Received signal {signum}, cleaning up containers...")
 
         if self.cleanup_callback:
             self.cleanup_callback()
 
-        self.cleanup_in_progress = False
         sys.exit(0)

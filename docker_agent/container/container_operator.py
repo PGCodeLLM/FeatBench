@@ -11,14 +11,73 @@ from docker_agent.utils.command_executor import LocalCommandExecutor, DockerComm
 from docker_agent.core.exceptions import ContainerOperationError
 from docker_agent.container.cache_manager import get_cpu_limit
 
+# ---------------------------------------------------------------------------
+# Per-repo / per-instance pytest configuration (mirrored from stable harness)
+# ---------------------------------------------------------------------------
+
+_REPO_PYTEST_TIMEOUT: dict[str, int] = {
+    "faststream": 20,
+    "python-sdk": 60,
+}
+_DEFAULT_PYTEST_TIMEOUT = 1800
+
+# Repos that actually benefit from xdist parallelism.
+_XDIST_REPOS: set[str] = {"pybamm", "faststream", "xarray"}
+
+# Instance-level: specific test files that need a different -n override.
+_INSTANCE_FILE_XDIST_OVERRIDES: dict[str, dict[str, int]] = {
+    "pybamm-team__PyBaMM-4073": {
+        "tests/integration/test_models/test_full_battery_models/test_lithium_ion/test_spm.py": 1,
+        "tests/unit/test_serialisation/test_serialisation.py": 1,
+    },
+    "pydata__xarray-10161": {
+        "xarray/tests/test_backends.py": 1,
+    },
+    "pydata__xarray-10274": {
+        "xarray/tests/test_backends.py": 1,
+    },
+}
+
+# Repo-level: files that must run in a separate pytest invocation.
+_REPO_ISOLATED_TEST_FILES: dict[str, set[str]] = {
+    "tox": {
+        "tests/tox_env/python/test_python_runner.py",
+    },
+    "dvc": {
+        "tests/integration/test_studio_live_experiments.py",
+    },
+    "xarray": {
+        "xarray/tests/test_strategies.py",
+        "xarray/tests/test_backends.py",
+    },
+    "python-sdk": {
+        "tests/shared/test_streamable_http.py",
+    },
+}
+
+
+def _get_pytest_timeout(repo_name: str) -> int:
+    """Return the per-test pytest-timeout value for the given repo."""
+    repo_lower = repo_name.lower()
+    for key, timeout in _REPO_PYTEST_TIMEOUT.items():
+        if key in repo_lower:
+            return timeout
+    return _DEFAULT_PYTEST_TIMEOUT
+
+
+def _should_use_xdist(repo_name: str) -> bool:
+    """Return True if this repo should use xdist parallelism."""
+    repo_lower = repo_name.lower()
+    return any(r in repo_lower for r in _XDIST_REPOS)
+
 
 class ContainerOperator:
     """Container operator class"""
 
-    def __init__(self, repo: str, container: Optional[Container] = None):
+    def __init__(self, repo: str, container: Optional[Container] = None, log_dir=None):
         self.container = container
         self.logger = logging.getLogger(__name__)
-        self.docker_executor = DockerCommandExecutor(container)
+        self.docker_executor = DockerCommandExecutor(container, log_dir=log_dir)
         self.local_executor = LocalCommandExecutor()
         self.base_path = Path(__file__).parent.parent  # Go up to the root
         self.repo = repo
@@ -27,6 +86,10 @@ class ContainerOperator:
 
         if self.container:
             self.docker_executor.execute(f"git config --global --add safe.directory /workdir/swap/{self.repo_name}")
+            self.docker_executor.execute("pip config set global.index-url https://pypi.org/simple")
+            self.docker_executor.execute(
+                "printf '[[index]]\\nurl = \"https://pypi.org/simple\"\\ndefault = true' > /root/.config/uv/uv.toml"
+            )
 
     def repo_clone(self, use_docker=True):
         """Clone repository"""
@@ -215,44 +278,30 @@ class ContainerOperator:
         else:
             self.logger.info("conan cmake env set up successfully")
 
-    def _setup_tox_env(self, repo_name: str) -> None:
-        """Prepare tox repository test environment by installing package in editable mode.
+    # Repos that should NOT receive the generic `pip install -e .` step.
+    _NO_EDITABLE_INSTALL_REPOS: set[str] = {
+        "scikit-learn/scikit-learn",
+        "jupyterlab/jupyter-ai",
+        "reflex-dev/reflex",
+    }
 
-        Uses a sentinel file to skip re-running the install if it has already
-        been completed in this container.
-        """
-        sentinel = "/tmp/.tox_env_setup_done"
-        check_exit, _ = self.docker_executor.execute(f"test -f {sentinel}", "/", tty=False, timeout=10)
-        if check_exit == 0:
-            self.logger.info("tox env already set up (sentinel exists), skipping")
-            return
-
-        self.logger.info("Setting up tox env with editable install")
-        cmd = f"pip install -e . && touch {sentinel}"
-        exit_code, output = self.docker_executor.execute(cmd, f"/workdir/swap/{repo_name}", tty=False, timeout=300)
+    def _setup_editable_install(self, repo_name: str) -> None:
+        """Generic `pip install -e .` for repos that need an editable install."""
+        self.logger.info(f"Running pip install -e . for {repo_name}")
+        exit_code, output = self.docker_executor.execute(
+            "pip install -e .", f"/workdir/swap/{repo_name}", tty=False, timeout=600
+        )
         if exit_code != 0:
-            self.logger.error(f"tox env setup failed: {output}")
-            raise ContainerOperationError(
-                f"tox env setup failed: {output}",
-                container_id=self.container.id if self.container else None,
-            )
-        self.logger.info("tox env set up successfully")
+            self.logger.warning(f"pip install -e . for {repo_name} failed (non-fatal): {output}")
+        else:
+            self.logger.info(f"pip install -e . for {repo_name} succeeded")
 
     def _setup_pybamm_env(self, repo_name: str) -> None:
-        """Prepare PyBaMM test environment by installing package with all extras.
-
-        Uses a sentinel file to skip re-running the install if it has already
-        been completed in this container.
-        """
-        sentinel = "/tmp/.pybamm_env_setup_done"
-        check_exit, _ = self.docker_executor.execute(f"test -f {sentinel}", "/", tty=False, timeout=10)
-        if check_exit == 0:
-            self.logger.info("PyBaMM env already set up (sentinel exists), skipping")
-            return
-
+        """Prepare PyBaMM test environment by installing package with all extras."""
         self.logger.info("Setting up PyBaMM env with editable install and [all] extras")
-        cmd = f"pip install -e '.[all]' && touch {sentinel}"
-        exit_code, output = self.docker_executor.execute(cmd, f"/workdir/swap/{repo_name}", tty=False, timeout=300)
+        exit_code, output = self.docker_executor.execute(
+            "pip install -e '.[all]'", f"/workdir/swap/{repo_name}", tty=False, timeout=300
+        )
         if exit_code != 0:
             self.logger.error(f"PyBaMM env setup failed: {output}")
             raise ContainerOperationError(
@@ -262,22 +311,11 @@ class ContainerOperator:
         self.logger.info("PyBaMM env set up successfully")
 
     def _setup_jupyter_ai_env(self, repo_name: str) -> None:
-        """Prepare jupyter-ai test environment by upgrading Node.js and installing packages.
-
-        Uses a sentinel file to skip re-running the install if it has already
-        been completed in this container.
-        """
-        sentinel = "/tmp/.jupyter_ai_env_setup_done"
-        check_exit, _ = self.docker_executor.execute(f"test -f {sentinel}", "/", tty=False, timeout=10)
-        if check_exit == 0:
-            self.logger.info("jupyter-ai env already set up (sentinel exists), skipping")
-            return
-
+        """Prepare jupyter-ai test environment by upgrading Node.js and installing packages."""
         self.logger.info("Setting up jupyter-ai env with Node.js upgrade and editable installs")
         cmd = (
             "npm install -g n && n 14 && hash -r && "
-            'pip install -e "packages/jupyter-ai-magics[test]" -e "packages/jupyter-ai-test[test]" -e "packages/jupyter-ai[test]" && '
-            f"touch {sentinel}"
+            'pip install -e "packages/jupyter-ai-magics[test]" -e "packages/jupyter-ai-test[test]" -e "packages/jupyter-ai[test]"'
         )
         exit_code, output = self.docker_executor.execute(cmd, f"/workdir/swap/{repo_name}", tty=False, timeout=600)
         if exit_code != 0:
@@ -287,6 +325,31 @@ class ContainerOperator:
                 container_id=self.container.id if self.container else None,
             )
         self.logger.info("jupyter-ai env set up successfully")
+
+    def setup_repo_env(self, repo_name: str, instance_id: Optional[str] = None) -> None:
+        """Run repo-specific environment setup (cmake, editable installs, etc.).
+
+        Safe to call multiple times — editable installs (pip install -e) are
+        idempotent, and the conan cmake setup is sentinel-guarded since it
+        writes outside the repo dir and survives git checkout.
+
+        Called once before the agent runs and once before tests run, so that
+        git checkout in between doesn't break the environment.
+        """
+        # Repo-specific custom setup steps (run in addition to the generic install).
+        if repo_name == "conan":
+            self._setup_conan_cmake_env(repo_name)
+        if repo_name == "jupyter-ai":
+            self._setup_jupyter_ai_env(repo_name)
+
+        # PyBaMM needs the [all] extras, so it has its own install path.
+        if repo_name.lower() == "pybamm" and instance_id != "pybamm-team__PyBaMM-4394":
+            self._setup_pybamm_env(repo_name)
+            return
+
+        # Generic `pip install -e .` for everything else, except excluded repos.
+        if self.repo not in self._NO_EDITABLE_INSTALL_REPOS:
+            self._setup_editable_install(repo_name)
 
     def run_tests_in_container(
         self,
@@ -298,15 +361,6 @@ class ContainerOperator:
         instance_id: Optional[str] = None,
     ) -> tuple[Set[str], str]:
         """Run tests in container and return passed test files and logs"""
-        if repo_name == "conan":
-            self._setup_conan_cmake_env(repo_name)
-        if repo_name == "tox":
-            self._setup_tox_env(repo_name)
-        if repo_name.lower() == "pybamm" and instance_id != "pybamm-team__PyBaMM-4394":
-            self._setup_pybamm_env(repo_name)
-        if repo_name == "jupyter-ai":
-            self._setup_jupyter_ai_env(repo_name)
-
         pytest_args = []
 
         if test_files is None:
@@ -328,50 +382,153 @@ class ContainerOperator:
                                 pytest_args.append(f"{file_name}::{class_name}::{method_name}")
                 expected_tests = pytest_args
             else:
-                # Running individual tests could lead to failed tests
-                # we collect the unique test files and run them entirely to get more stable results,
-                # then get the status for the individual expected tests from the pytest output
-                # the above cases are not used anymore and should probably be removed in the future,
-                # but we keep them for now to avoid unexpected issues
                 tests_files_union = {t.split("::")[0] for t in test_files}
                 pytest_args.extend(list(tests_files_union))
                 expected_tests = test_files
 
-        base_cmd_template = "python3 -m pytest -q -rA --tb=no -p no:pretty --timeout=60 --continue-on-collection-errors"
+        # --- Build the base pytest command (no xdist flags) ----------------
+        timeout_val = _get_pytest_timeout(repo_name)
+        base_cmd = (
+            f"python3 -m pytest -q -rA --tb=no -p no:pretty"
+            f" --timeout={timeout_val} --continue-on-collection-errors"
+            f" --timeout-method=signal"
+        )
         if instance_id == "tox-dev__tox-3534":
-            base_cmd_template += " --run-integration"
-        if use_xdist:
+            base_cmd += " --run-integration"
+
+        # --- Determine xdist configuration ---------------------------------
+        # base_cmd has NO xdist-related flags. Each invocation below decides
+        # whether to add `-n N` or `-p no:xdist` to override any project-level
+        # `addopts = -n auto`.
+        xdist_enabled_repo = _should_use_xdist(repo_name)
+        use_xdist_effective = use_xdist and xdist_enabled_repo
+        xdist_workers = 0
+        if use_xdist_effective:
             self._install_xdist(repo_name)
             xdist_workers = get_cpu_limit(self.repo)
-            base_cmd_template = f"{base_cmd_template} --timeout-method=thread -n {xdist_workers}"
-        else:
-            base_cmd_template = f"{base_cmd_template} --timeout-method=signal"
 
         if log_file:
             self.docker_executor.execute(f"bash -c '> /logs/{log_file}'", "/")
 
-        # Estimate full command length (conservative estimate bash limit 100KB)
-        estimated_length = len(base_cmd_template) + sum(len(arg) + 1 for arg in pytest_args)
+        # --- Split test args into execution groups -------------------------
+        isolated_files = _REPO_ISOLATED_TEST_FILES.get(repo_name, set())
+        xdist_overrides = _INSTANCE_FILE_XDIST_OVERRIDES.get(instance_id, {}) if instance_id else {}
 
-        if estimated_length > 100000:  # If exceeds 100KB, use batch execution directly
+        # Only split when we have string-based test node IDs (the evaluation path)
+        # A file may be in isolated_files, xdist_overrides, both, or neither.
+        # Files in either set always get their own pytest invocation.
+        # The xdist override (if any) sets the worker count for that invocation.
+        if test_files is not None and test_files and isinstance(test_files[0], str):
+            normal_args = []
+            # file_path -> {"n": Optional[int], "args": list[str]}
+            #   n is None  -> isolated only (disable xdist)
+            #   n is int   -> override (with explicit -n N), implies own invocation
+            per_file_groups: dict[str, dict] = {}
+
+            for arg in pytest_args:
+                file_path = arg.split("::")[0]
+                is_isolated = file_path in isolated_files
+                override_n = xdist_overrides.get(file_path)
+                if is_isolated or override_n is not None:
+                    if file_path not in per_file_groups:
+                        per_file_groups[file_path] = {"n": override_n, "args": []}
+                    per_file_groups[file_path]["args"].append(arg)
+                else:
+                    normal_args.append(arg)
+
+            has_splits = bool(per_file_groups)
+        else:
+            normal_args = pytest_args
+            per_file_groups = {}
+            has_splits = False
+
+        all_matched: Set[str] = set()
+        all_output: list[str] = []
+
+        def _with_xdist(cmd: str, n: Optional[int]) -> str:
+            """Append the right xdist flag(s) to a base pytest command.
+
+            n is None  -> disable xdist (overrides project-level `-n auto`),
+                          but only if the repo's project config might enable it.
+            n is int   -> explicitly run with `-n {n}` workers.
+            """
+            if n is None:
+                if xdist_enabled_repo:
+                    return f"{cmd} -p no:xdist"
+                return cmd
+            return f"{cmd} -n {n}"
+
+        # --- Run main group ------------------------------------------------
+        if normal_args:
+            n_main = xdist_workers if (use_xdist_effective and xdist_workers > 1) else None
+            cmd_main = _with_xdist(base_cmd, n_main)
+            matched, output = self._run_pytest_group(
+                repo_name, normal_args, cmd_main, expected_tests, expected_statuses, log_file
+            )
+            all_matched.update(matched)
+            all_output.append(output)
+
+        # --- Run per-file groups (isolated and/or xdist-override) ----------
+        if has_splits:
+            for file_path, group in per_file_groups.items():
+                n_workers = group["n"]
+                args = group["args"]
+                if n_workers is not None:
+                    self.logger.info(f"Running per-file group with -n {n_workers}: {file_path}")
+                else:
+                    self.logger.info(f"Running isolated test file: {file_path}")
+                cmd = _with_xdist(base_cmd, n_workers)
+                matched, output = self._run_pytest_group(
+                    repo_name, args, cmd, expected_tests, expected_statuses, log_file
+                )
+                all_matched.update(matched)
+                all_output.append(output)
+
+        combined_output = "\n".join(all_output)
+        return all_matched, combined_output
+
+    def _run_pytest_group(
+        self,
+        repo_name: str,
+        pytest_args: List[str],
+        cmd_template: str,
+        expected_tests: List[str],
+        expected_statuses: Optional[List[TestStatus]],
+        log_file: Optional[str],
+    ) -> tuple[Set[str], str]:
+        """Run a single pytest invocation for a group of test args.
+
+        Handles command-length batching internally if needed.
+        """
+        estimated_length = len(cmd_template) + sum(len(a) + 1 for a in pytest_args)
+
+        if estimated_length > 100000:
             self.logger.info(f"Too many test parameters ({len(pytest_args)}), using batch execution")
-            return self._run_tests_in_batches(repo_name, pytest_args, base_cmd_template, expected_statuses, log_file)
+            return self._run_tests_in_batches(repo_name, pytest_args, cmd_template, expected_tests, expected_statuses, log_file)
 
-        cmd = f"{base_cmd_template} {' '.join(pytest_args)}"
+        cmd = f"{cmd_template} {' '.join(pytest_args)}"
         if log_file:
             cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
 
         exit_code, output = self.docker_executor.execute(
-            cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=3600
+            cmd, f"/workdir/swap/{repo_name}", stream=True, tty=False, timeout=3600
         )
-        matched_files = self.parse_pytest_output(output, expected_tests, expected_statuses)
-        return matched_files, output
+        matched = self.parse_pytest_output(output, expected_tests, expected_statuses)
+        return matched, output
 
-    def _run_tests_in_batches(self, repo_name: str, pytest_args: List[str], base_cmd_template: str, expected_statuses: Optional[List[TestStatus]] = None, log_file: Optional[str] = None) -> tuple[Set[str], str]:
+    def _run_tests_in_batches(
+        self,
+        repo_name: str,
+        pytest_args: List[str],
+        base_cmd_template: str,
+        expected_tests: List[str],
+        expected_statuses: Optional[List[TestStatus]] = None,
+        log_file: Optional[str] = None,
+    ) -> tuple[Set[str], str]:
         """When command is too long, execute tests in batches"""
         self.logger.info("Executing tests in batches to avoid command length limit")
 
-        batch_size = 250  # Max 250 tests per batch
+        batch_size = 250
         all_output = []
         all_matched = set()
 
@@ -383,11 +540,11 @@ class ContainerOperator:
             if log_file:
                 cmd = f'bash -c "set -o pipefail; {cmd} 2>&1 | tee -a /logs/{log_file}"'
             exit_code, output = self.docker_executor.execute(
-                cmd, f"/workdir/swap/{repo_name}", stream=True, tty=True, timeout=3600
+                cmd, f"/workdir/swap/{repo_name}", stream=True, tty=False, timeout=3600
             )
 
             all_output.append(output)
-            batch_matched = self.parse_pytest_output(output, batch, expected_statuses)
+            batch_matched = self.parse_pytest_output(output, expected_tests, expected_statuses)
             all_matched.update(batch_matched)
 
         combined_output = '\n'.join(all_output)

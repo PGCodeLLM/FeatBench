@@ -35,11 +35,11 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        # Default: process all evaluation_results_*.json files in docker_agent/
-        root = Path(__file__).parent.parent / "docker_agent"
-        files = sorted(root.glob("evaluation_results_*.json"))
+        # Default: process all *.json files in evaluations_results/
+        root = Path(__file__).parent.parent / "evaluations_results"
+        files = sorted(root.glob("*.json"))
         if not files:
-            print("No evaluation_results_*.json files found.")
+            print("No *.json files found.")
             sys.exit(1)
     else:
         in_place = "--in-place" in args

@@ -7,15 +7,18 @@ docker_agent modules for better maintainability and consistency.
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import List, Optional
 import random
+
+from tqdm import tqdm
 
 from docker_agent.core.base_runner import BaseRunner
 from docker_agent.container.container_operator import ContainerOperator
 from docker_agent.agents.manager import AgentManager
 from docker_agent.parsing.patch_analyzer import PatchAnalyzer
 from docker_agent.evaluation.results import EvaluationResultManager
-from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_FILE, MAX_SPECS_PER_REPO, MAX_EVAL_WORKERS, LOG_FILE
+from docker_agent.config.config import AGENTS, EVALUATION_RESULTS_DIR, MAX_SPECS_PER_REPO, MAX_EVAL_WORKERS, EXP_ID
 from docker_agent.core.types import Spec
 
 
@@ -26,9 +29,28 @@ class AgentEvaluator(BaseRunner):
         """Initialize Agent Evaluator"""
         super().__init__()
 
-        self.result_manager = EvaluationResultManager(self.base_path)
+        self.result_manager = EvaluationResultManager(EVALUATION_RESULTS_DIR / f"{EXP_ID}.json")
         self.patch_analyzer = PatchAnalyzer()
         self.shared_data_lock = threading.Lock()
+        self._executor = None  # Set during evaluate/reevaluate for signal-handler shutdown
+
+    def _on_signal(self):
+        """Shut down the executor so no new workers start, then clean up containers."""
+        if self._executor is not None:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+        super()._on_signal()
+
+    def _setup_instance_logger(self, instance_id: str, log_dir: Path):
+        """Set up a per-instance file logger so each instance's harness logs go to its own directory."""
+        logger_name = f"instance.{instance_id}"
+        instance_logger = logging.getLogger(logger_name)
+        if not instance_logger.handlers:
+            instance_logger.setLevel(logging.DEBUG)
+            instance_logger.propagate = False
+            log_dir.mkdir(parents=True, exist_ok=True)
+            fh = logging.FileHandler(log_dir / "harness.log", encoding="utf-8")
+            fh.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+            instance_logger.addHandler(fh)
 
     def evaluate(self, agent_names: Optional[List[str]] = None, instance_ids: Optional[List[str]] = None):
         """
@@ -50,7 +72,7 @@ class AgentEvaluator(BaseRunner):
             self.logger.info(f"Filtering to {len(instance_id_set)} specified instance IDs")
 
         # Load cached results so we can resume without re-running completed specs
-        all_results, evaluated_keys = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
+        all_results, evaluated_keys = self.result_manager.load_existing_results()
         if evaluated_keys:
             self.logger.info(f"Resuming evaluation: {len(evaluated_keys)} agent/instance pairs already cached")
 
@@ -88,29 +110,38 @@ class AgentEvaluator(BaseRunner):
         AgentManager.remove_all_locks()
         
         # Process specs in parallel using ThreadPoolExecutor
-        completed_count = 0
+        passed_count = 0
+        failed_count = 0
         with ThreadPoolExecutor(max_workers=MAX_EVAL_WORKERS) as executor:
-            # Submit all tasks
+            self._executor = executor
             future_to_spec = {
-                executor.submit(self._eval_spec, agents, spec): spec 
+                executor.submit(self._eval_spec, agents, spec): spec
                 for agents, spec in all_specs
             }
-            
-            # Process completed tasks
-            for future in as_completed(future_to_spec):
-                spec = future_to_spec[future]
-                try:
-                    results = future.result()
-                    if results:
-                        all_results.extend(results)
-                        self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
-                    
-                    completed_count += 1
-                    self.logger.info(f"Progress: {completed_count}/{total_evaluations} evaluations completed")
-                except Exception as e:
-                    self.logger.error(f"Error in worker thread for {spec.instance_id}: {e}")
 
-        self.logger.info("Evaluation completed")
+            with tqdm(total=total_evaluations, desc="Evaluating", unit="inst") as pbar:
+                for future in as_completed(future_to_spec):
+                    spec = future_to_spec[future]
+                    try:
+                        results = future.result()
+                        if results:
+                            all_results.extend(results)
+                            self.result_manager.save_evaluation_results(all_results)
+                            for r in results:
+                                if r.get("success"):
+                                    passed_count += 1
+                                else:
+                                    failed_count += 1
+                    except Exception as e:
+                        self.logger.error(f"Error in worker thread for {spec.instance_id}: {e}")
+                        failed_count += 1
+
+                    pbar.set_postfix({"pass": passed_count, "fail": failed_count})
+                    pbar.update(1)
+
+            self._executor = None
+
+        self.logger.info(f"Evaluation completed: {passed_count} passed, {failed_count} failed")
 
     def reevaluate(self, agent_names: Optional[List[str]] = None, instance_ids: Optional[List[str]] = None):
         """
@@ -124,8 +155,8 @@ class AgentEvaluator(BaseRunner):
             agent_names: List of agent names to re-evaluate
             instance_ids: List of instance IDs to re-evaluate. If None, re-evaluates all.
         """
-        # Load cached results from the experiment identified by EXP_SUFFIX
-        cached_results, _ = self.result_manager.load_existing_results(EVALUATION_RESULTS_FILE)
+        # Load cached results from the experiment identified by EXP_ID
+        cached_results, _ = self.result_manager.load_existing_results()
         if not cached_results:
             self.logger.error("No cached results found for the given timestamp. Nothing to re-evaluate.")
             return
@@ -180,31 +211,43 @@ class AgentEvaluator(BaseRunner):
 
         # Start with the full cached list; completed re-evals replace their entry in-place.
         all_results = list(cached_results)
-        completed_count = 0
+        passed_count = 0
+        failed_count = 0
         with ThreadPoolExecutor(max_workers=MAX_EVAL_WORKERS) as executor:
+            self._executor = executor
             future_to_key = {
                 executor.submit(self._reeval_spec, spec, agent_name, model_name, patch_content): (agent_name, spec.instance_id)
                 for spec, agent_name, model_name, patch_content in work_items
             }
 
-            for future in as_completed(future_to_key):
-                key = future_to_key[future]
-                try:
-                    result = future.result()
-                    if result:
-                        with self.shared_data_lock:
-                            all_results[result_index[key]] = result
-                        self.result_manager.save_evaluation_results(all_results, EVALUATION_RESULTS_FILE)
+            with tqdm(total=len(work_items), desc="Re-evaluating", unit="inst") as pbar:
+                for future in as_completed(future_to_key):
+                    key = future_to_key[future]
+                    try:
+                        result = future.result()
+                        if result:
+                            with self.shared_data_lock:
+                                all_results[result_index[key]] = result
+                            self.result_manager.save_evaluation_results(all_results)
+                            if result.get("success"):
+                                passed_count += 1
+                            else:
+                                failed_count += 1
+                    except Exception as e:
+                        self.logger.error(f"Error in worker thread for {key}: {e}")
+                        failed_count += 1
 
-                    completed_count += 1
-                    self.logger.info(f"Progress: {completed_count}/{len(work_items)} re-evaluations completed")
-                except Exception as e:
-                    self.logger.error(f"Error in worker thread for {key}: {e}")
+                    pbar.set_postfix({"pass": passed_count, "fail": failed_count})
+                    pbar.update(1)
 
-        self.logger.info("Re-evaluation completed")
+            self._executor = None
+
+        self.logger.info(f"Re-evaluation completed: {passed_count} passed, {failed_count} failed")
 
     def _reeval_spec(self, spec: Spec, agent_name: str, model_name: str, patch_content: str) -> Optional[dict]:
         """Re-evaluate a single spec with a cached patch."""
+        if self.cleanup_in_progress:
+            return None
         container = None
         try:
             container = self.docker_manager.create_container(spec)
@@ -212,8 +255,11 @@ class AgentEvaluator(BaseRunner):
             with self.shared_data_lock:
                 self.active_containers.append(container)
 
-            operator = ContainerOperator(spec.repo, container)
-            manager = AgentManager(container, AGENTS[0])  # agent config unused for reevaluate
+            instance_log_dir = self.base_path / "logs" / EXP_ID / spec.instance_id
+            self._setup_instance_logger(spec.instance_id, instance_log_dir)
+
+            operator = ContainerOperator(spec.repo, container, log_dir=instance_log_dir)
+            manager = AgentManager(container, AGENTS[0], log_dir=instance_log_dir)  # agent config unused for reevaluate
 
             result = manager.reevaluate(spec, operator, patch_content, agent_name, model_name)
             return result
@@ -228,17 +274,22 @@ class AgentEvaluator(BaseRunner):
                 self.docker_manager.cleanup_container(container, force_remove=True)
 
     def _eval_spec(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
+        if self.cleanup_in_progress:
+            return None
         container = None
         results = []
         try:
             container = self.docker_manager.create_container(spec)
-            
+
             # Track container before any operations (not after cleanup)
             with self.shared_data_lock:
                 self.active_containers.append(container)
-            
-            operator = ContainerOperator(spec.repo, container)
-            agent_managers = [AgentManager(container, agent_config) for agent_config in agents_to_evaluate]
+
+            instance_log_dir = self.base_path / "logs" / EXP_ID / spec.instance_id
+            self._setup_instance_logger(spec.instance_id, instance_log_dir)
+
+            operator = ContainerOperator(spec.repo, container, log_dir=instance_log_dir)
+            agent_managers = [AgentManager(container, agent_config, log_dir=instance_log_dir) for agent_config in agents_to_evaluate]
 
             for agent_manager in agent_managers:
                 self.logger.info(f"Starting evaluation of {agent_manager.agent_config.name} on {spec.instance_id}")
@@ -258,31 +309,3 @@ class AgentEvaluator(BaseRunner):
             if container and should_cleanup:
                 self.docker_manager.cleanup_container(container, force_remove=True)
 
-    # def _eval_spec_wrapper(self, agents_to_evaluate: List[AGENTS], spec: Spec) -> Optional[List[dict]]:
-    #     """Wrapper for _eval_spec that sets up per-thread logging"""
-    #     thread_logger = self._setup_thread_logging(spec.instance_id)
-        
-    #     try:
-    #         return self._eval_spec(agents_to_evaluate, spec, thread_logger)
-    #     except Exception as e:
-    #         thread_logger.error(f"Error in thread for {spec.instance_id}: {e}")
-    #         raise
-    
-    # def _setup_thread_logging(self, instance_id: int) -> logging.Logger:
-    #     """Setup per-thread logging"""
-    #     thread_logger = logging.getLogger(f"evaluator.thread_{instance_id}")
-        
-    #     # Only add handler if not already added
-    #     if not thread_logger.handlers:
-    #         log_file = self.base_path / "logs" / f"evaluator_thread_{instance_id}.log"
-    #         log_file.parent.mkdir(parents=True, exist_ok=True)
-            
-    #         handler = logging.FileHandler(log_file, encoding='utf-8')
-    #         handler.setFormatter(logging.Formatter(
-    #             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    #         ))
-    #         thread_logger.addHandler(handler)
-    #         thread_logger.setLevel(logging.INFO)
-    #         thread_logger.propagate = False  # Don't propagate to root logger
-        
-    #     return thread_logger

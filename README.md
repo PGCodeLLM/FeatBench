@@ -260,7 +260,7 @@ branch = "main"
 The evaluation process generates the following key files:
 
 - `final_analysis_results*.json`: Curated evaluation summaries
-- `evaluation_results_file.json`: Agents Evaluation results
+- `evaluation_results/<exp_id>.json`: Per-run agent evaluation results (one file per `<timestamp>_<model>` experiment)
 - `docker_agent/swap/`: Temporary working directory (can be safely deleted)
 
 ### Output Format

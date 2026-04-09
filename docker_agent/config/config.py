@@ -37,7 +37,7 @@ AGENTS = config.AGENTS
 # Experiment UUID
 EXP_UUID = str(uuid.uuid4())[:8]
 
-# Experiment suffix
+# Experiment ID
 # Allow resuming an experiment by supplying -t/--resume-timestamp on the CLI.
 _resume_timestamp = None
 for _i, _arg in enumerate(sys.argv):
@@ -45,7 +45,7 @@ for _i, _arg in enumerate(sys.argv):
         _resume_timestamp = sys.argv[_i + 1]
         break
 timestamp = _resume_timestamp if _resume_timestamp else datetime.now().strftime("%Y%m%d-%H%M%S")
-# EXP_SUFFIX embeds the model name of the agent being evaluated. Ideally we'd
+# EXP_ID embeds the model name of the agent being evaluated. Ideally we'd
 # read this from the parsed argparse result, but config.py is executed at
 # import time — before argparse runs in main.py. We therefore inspect sys.argv
 # directly here to find the first value passed to --agents, look it up in
@@ -57,15 +57,15 @@ for _i, _arg in enumerate(sys.argv):
         _cli_agent_name = sys.argv[_i + 1]
         break
 _selected_agent = next((a for a in AGENTS if a.name == _cli_agent_name), None) if _cli_agent_name else None
-_model_for_suffix = (_selected_agent or AGENTS[0]).model
-model_name = _model_for_suffix.replace('/', '_').replace('\\', '_').replace(':', '_')
-EXP_SUFFIX = f"{timestamp}_{model_name}"
+_model_for_id = (_selected_agent or AGENTS[0]).model
+model_name = _model_for_id.replace('/', '_').replace('\\', '_').replace(':', '_')
+EXP_ID = f"{timestamp}_{model_name}"
 
 # Logging configuration
 LOGGING_LEVEL = config.level
 LOGGING_FORMAT = config.format
 LOG_FILE = current_dir / config.log_file
-new_filename = f"{LOG_FILE.stem}_{EXP_SUFFIX}{LOG_FILE.suffix}"
+new_filename = f"{LOG_FILE.stem}_{EXP_ID}{LOG_FILE.suffix}"
 LOG_FILE = LOG_FILE.parent / new_filename
 
 # Path configuration
@@ -86,7 +86,11 @@ MAX_EVAL_WORKERS = config.max_eval_workers
 # File names
 SETUP_FILES_NAME = config.setup_files_list
 RECOMMENDED_PYTHON_VERSION = config.recommended_python_version
-EVALUATION_RESULTS_FILE = current_dir / config.evaluation_results_file
+
+# Directory containing per-experiment evaluation result files. Each run writes
+# to EVALUATION_RESULTS_DIR / f"{EXP_ID}.json". Resolved relative to the repo
+# root (one level above docker_agent/) so results sit at the project top level.
+EVALUATION_RESULTS_DIR = current_dir.parent / config.evaluation_results_dir
 
 # Trae configuration
 TRAE_TIMESTAMP_FORMAT = config.trajectory_timestamp_format
@@ -111,7 +115,12 @@ terminal_height = terminal_size.lines
 DOCKER_ENVIRONMENT = {
     "COLUMNS": str(terminal_width),
     "LINES": str(terminal_height),
-    "HF_HUB_OFFLINE": "1"
+    "HF_HUB_OFFLINE": "1",
+    # Disable ANSI color output from tools that respect these conventions
+    # (pytest, rich, click, etc.) so exec.log stays human-readable.
+    "NO_COLOR": "1",
+    "PY_COLORS": "0",
+    "TERM": "dumb",
 }
 
 # Preprocess Dockerfile template with proxy and user configurations

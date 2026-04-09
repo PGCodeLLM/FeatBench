@@ -22,8 +22,8 @@ class OracleAgent(BaseAgent):
         before calling ``agent.run()``.
     """
 
-    def __init__(self, container, agent_config):
-        super().__init__(container, agent_config)
+    def __init__(self, container, agent_config, log_dir=None):
+        super().__init__(container, agent_config, log_dir=log_dir)
         # Set by AgentManager.evaluate() before run() is called.
         self.spec_patch: Optional[List[Dict]] = None
 
@@ -35,7 +35,13 @@ class OracleAgent(BaseAgent):
         """No external agent code to install."""
         self.logger.info("OracleAgent: no agent code to prepare")
 
-    def run(self, problem_statement: str, instance_id: str, repo_name: str) -> tuple[bool, str]:
+    def run(
+        self,
+        problem_statement: str,
+        instance_id: str,
+        repo_name: str,
+        base_commit: str,
+    ) -> tuple[bool, str]:
         """Apply the ground-truth patch and capture a git diff as patch.diff."""
         self.logger.info(f"OracleAgent: applying ground-truth patch for {instance_id}")
 
@@ -75,13 +81,9 @@ class OracleAgent(BaseAgent):
             )
             self.logger.info(f"OracleAgent: applied patches to {len(applied)} file(s): {applied}")
 
-            # Produce the patch.diff artefact that the evaluator expects.
-            diff_exit, diff_output = self.docker_executor.execute(
-                f"git diff > {patch_path}", repo_workdir, stream=True
-            )
-            if diff_exit != 0:
-                self.logger.warning(f"OracleAgent: git diff failed: {diff_output}")
-                return False, diff_output
+            diff_ok, diff_err = self._generate_patch_diff(repo_workdir, patch_path, base_commit)
+            if not diff_ok:
+                return False, diff_err
 
             return True, f"Applied {len(applied)} patch(es): {applied}"
 

@@ -20,9 +20,18 @@ class TraeAgent(BaseAgent):
         if exit_code != 0:
             raise AgentSetupError(f"Failed to clone agent repository: {output}", agent_name=self.agent_config.name)
 
-    def run(self, problem_statement: str, instance_id: str, repo_name: str) -> tuple[bool, str]:
-        """Run trae-agent to solve problem"""
+    def run(
+        self,
+        problem_statement: str,
+        instance_id: str,
+        repo_name: str,
+        base_commit: str,
+    ) -> tuple[bool, str]:
+        """Run trae-agent to solve the problem and capture changes via _generate_patch_diff."""
         self.logger.info(f"Running {self.agent_config.name} to solve problem {instance_id}")
+
+        repo_workdir = f"/workdir/swap/{repo_name}"
+        patch_path = f"{repo_workdir}/patch.diff"
 
         try:
             escaped_problem = shlex.quote(problem_statement)
@@ -32,15 +41,26 @@ class TraeAgent(BaseAgent):
                 run_cmd, "/workdir/agent", stream=True, tty=True
             )
 
-            success = exit_code == 0
-            return success, agent_output
+            if exit_code != 0:
+                return False, agent_output
+
+            diff_ok, _ = self._generate_patch_diff(repo_workdir, patch_path, base_commit)
+            if not diff_ok:
+                return False, agent_output
+
+            return True, agent_output
 
         except Exception as e:
             self.logger.error(f"Error running trae-agent: {str(e)}")
             return False, str(e)
 
     def _build_command(self, escaped_problem: str, repo_name: str) -> str:
-        """Build trae-agent run command"""
+        """Build trae-agent run command.
+
+        We keep ``--patch-path`` / ``--must-patch`` so trae writes its own
+        patch.diff, but _generate_patch_diff overwrites it after the run as
+        a safety mechanism to keep patch generation consistent across agents.
+        """
         return (".venv/bin/python3.12 -m trae_agent.cli run "
             f"{escaped_problem} "
             "--must-patch "
@@ -49,6 +69,7 @@ class TraeAgent(BaseAgent):
             f"--model {self.agent_config.model} "
             f"--provider {self.agent_config.provider} "
             f"--config-file /workdir/swap/trae-agent/{self.agent_config.config_file} "
+            "--console-type simple "
             "--trajectory-file /logs/trajectory.json")
 
     @staticmethod
