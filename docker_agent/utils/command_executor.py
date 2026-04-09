@@ -2,6 +2,7 @@ import subprocess
 import logging
 import re
 import shlex
+import time
 from typing import Tuple, Optional
 import docker
 from abc import ABC, abstractmethod
@@ -242,6 +243,8 @@ class DockerCommandExecutor(BaseCommandExecutor):
         else:
             timeout_command = command
 
+        start_time = time.monotonic()
+
         exec_instance = self.client.api.exec_create(
             self.container.id,
             cmd=["/bin/bash", "-c", timeout_command],
@@ -286,7 +289,18 @@ class DockerCommandExecutor(BaseCommandExecutor):
             output = ''.join(output_lines)
 
             if timeout is not None and exit_code in (124, 137):
-                raise TestExecutionError(f"Container command execution timeout after {timeout}s")
+                elapsed = time.monotonic() - start_time
+                # Only treat as our timeout if enough wall-clock time actually
+                # passed (within 90% of the configured timeout). Otherwise the
+                # child process itself was killed (e.g. OOM) and just happens
+                # to share exit code 124/137.
+                if elapsed >= timeout * 0.9:
+                    raise TestExecutionError(f"Container command execution timeout after {elapsed:.0f}s (limit {timeout}s)")
+                else:
+                    self.logger.warning(
+                        f"Process exited with code {exit_code} after {elapsed:.0f}s "
+                        f"(timeout is {timeout}s) — not a timeout, likely OOM or signal kill"
+                    )
 
             return exit_code, output
         else:
@@ -294,7 +308,9 @@ class DockerCommandExecutor(BaseCommandExecutor):
 
             exit_code = self.client.api.exec_inspect(exec_instance['Id'])['ExitCode']
             if timeout is not None and exit_code in (124, 137):
-                raise TestExecutionError(f"Container command execution timeout after {timeout}s")
+                elapsed = time.monotonic() - start_time
+                if elapsed >= timeout * 0.9:
+                    raise TestExecutionError(f"Container command execution timeout after {elapsed:.0f}s (limit {timeout}s)")
 
             return exit_code, output
 
