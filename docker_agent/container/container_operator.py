@@ -86,6 +86,10 @@ class ContainerOperator:
 
         if self.container:
             self.docker_executor.execute(f"git config --global --add safe.directory /workdir/swap/{self.repo_name}")
+            self.docker_executor.execute("pip config set global.index-url https://pypi.org/simple")
+            self.docker_executor.execute(
+                "printf '[[index]]\\nurl = \"https://pypi.org/simple\"\\ndefault = true' > /root/.config/uv/uv.toml"
+            )
 
     def repo_clone(self, use_docker=True):
         """Clone repository"""
