@@ -49,7 +49,7 @@ Load from the Hugging Face dataset repository:
 ```toml
 # In docker_agent/settings.toml
 dataset_source = "hf"
-hf_dataset_repo = "PGCodeLLM/FeatBench_v1.0"
+hf_dataset_repo = "PGCodeLLM/FeatBench"
 hf_dataset_split = "test"
 ```
 
@@ -63,7 +63,7 @@ pip install datasets
 
 ```bash
 export DOCKER_AGENT_DATASET_SOURCE="hf"
-export DOCKER_AGENT_HF_DATASET_REPO="PGCodeLLM/FeatBench_v1.0"
+export DOCKER_AGENT_HF_DATASET_REPO="PGCodeLLM/FeatBench"
 export DOCKER_AGENT_HF_DATASET_SPLIT="test"
 ```
 
